@@ -146,11 +146,11 @@ sgx_status_t delete_ec256_key_pair( sgx_ec256_public_t* pub ){
 
 sgx_status_t delete_all_ec256_key_pairs(){
 	int retval  		   	   = 0; 
-	jalapeno_status_t j_status = J_SUCCESS; 
+	commpact_status_t cp_status = CP_SUCCESS; 
 
 	free( ec256_key_handles );
 	ec256_key_handles = NULL;
-	ocall_delete_sealed_keys_file( &j_status );
+	ocall_delete_sealed_keys_file( &cp_status );
 	//char msg1[] = "Deleted sealed key store file.";
 	//ocall_prints( &retval, msg1 );
 
@@ -383,7 +383,7 @@ sgx_status_t get_privkey(sgx_ec256_private_t* privkey, sgx_ec256_public_t* pubke
 
 sgx_status_t load_ec256_keys(){
 	int 					retval 	 = 0; 	 		// debug print return value
-	jalapeno_status_t 		j_status = J_SUCCESS; 	// custom status value
+	commpact_status_t 		cp_status = CP_SUCCESS; 	// custom status value
 	sgx_status_t 			status   = SGX_SUCCESS; // SGX status value
 	sgx_ecc_state_handle_t 	ecc_handle;
 	uint32_t 				ec256_key_handles_length = NUMBER_OF_EC256_KEY_PAIRS * sizeof( ec256_key_handle_t );
@@ -410,14 +410,14 @@ sgx_status_t load_ec256_keys(){
 		ocall_prints( &retval, msg );
 		return SGX_ERROR_OUT_OF_MEMORY;
 	}
-	status = ocall_load_sealed_keys( &j_status, (uint8_t*) sealed_data, seal_size );
+	status = ocall_load_sealed_keys( &cp_status, (uint8_t*) sealed_data, seal_size );
 	if ( status != SGX_SUCCESS ){
 		free( sealed_data );
 		char msg1[] = "ERROR: could not retrieved sealed EC256 keys from disk.";
 		ocall_prints( &retval, msg1 );
 		return status;
 	}
-	else if ( j_status == J_CANT_OPEN_FILE ){
+	else if ( cp_status == CP_CANT_OPEN_FILE ){
 		free( sealed_data );
 		//char msg2[] = "WARNING: problem opening sealed EC256 keys file from disk.";
 		//ocall_prints( &retval, msg2 );
@@ -447,7 +447,7 @@ sgx_status_t load_ec256_keys(){
 // Seal and store EC256 keys to disk
 sgx_status_t store_ec256_keys(){
 	int 					retval 	 = 0; 	 		// debug print return value
-	jalapeno_status_t 		j_status = J_SUCCESS; 		// custom status value
+	commpact_status_t 		cp_status = CP_SUCCESS; 		// custom status value
 	sgx_status_t 			status   = SGX_SUCCESS; // SGX status value
 
 	sgx_ecc_state_handle_t 	ecc_handle 				 = NULL;
@@ -486,9 +486,9 @@ sgx_status_t store_ec256_keys(){
 	//ocall_prints( &retval, msg2 );
 
 	// store the sealed EC256 key to disk
-	status = ocall_store_sealed_keys( &j_status, (uint8_t*) sealed_data, seal_size );
+	status = ocall_store_sealed_keys( &cp_status, (uint8_t*) sealed_data, seal_size );
 	free( sealed_data );
-	if (status != SGX_SUCCESS || j_status != J_SUCCESS) {
+	if (status != SGX_SUCCESS || cp_status != CP_SUCCESS) {
 		char msg3[] = "ERROR: cannot store EC256 key store to disk.";
 		ocall_prints( &retval, msg3 );
 		return status;

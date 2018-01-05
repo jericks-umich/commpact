@@ -66,10 +66,10 @@ enclave {
 		int ocall_prints([in, string] const char* str);
 		
 		// sealing functions
-		jalapeno_status_t ocall_store_sealed_keys([in,count=len] const uint8_t* sealed_data, uint32_t len);
-		jalapeno_status_t ocall_load_sealed_keys([out,count=len] uint8_t* sealed_data, uint32_t len);
+		commpact_status_t ocall_store_sealed_keys([in,count=len] const uint8_t* sealed_data, uint32_t len);
+		commpact_status_t ocall_load_sealed_keys([out,count=len] uint8_t* sealed_data, uint32_t len);
 
 		// delete persisten sealed key store file from disk
-		jalapeno_status_t ocall_delete_sealed_keys_file();
+		commpact_status_t ocall_delete_sealed_keys_file();
 	};
 };

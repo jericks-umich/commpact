@@ -1,9 +1,9 @@
-#ifndef JALAPENO_H
-#define JALAPENO_H
+#ifndef COMMPACT_H
+#define COMMPACT_H
 
 #include <time.h>
 
-#define ENCLAVE_FILENAME "/home/jericks/projects/jalapeno/lib/enclave.signed.so"
+#define ENCLAVE_FILENAME "/home/jericks/projects/commpact/enclave/lib/enclave.signed.so"
 #define KEY_STORE_FILENAME 	 "/tmp/sgx_ec256_key_store.dump"
 
 // Test Functions
@@ -15,4 +15,4 @@ void gen_n_keys( sgx_enclave_id_t enclave_id, uint32_t num);
 timespec diff(timespec start, timespec end);
 
 
-#endif // JALAPENO_H
+#endif // COMMPACT_H

@@ -1,6 +1,6 @@
 ######## SGX SDK Settings ########
 
-LIB_NAME ?= jalapeno
+LIB_NAME ?= commpact
 LIB_VERSION_MAJOR ?= 1
 LIB_VERSION_MINOR ?= 0
 FULL_LIB_VERSION := $(LIB_VERSION_MAJOR).$(LIB_VERSION_MINOR)
@@ -56,34 +56,34 @@ else
 	Urts_Library_Name := sgx_urts
 endif
 
-# Jalapeno library source code
-Jalapeno_Cpp_Files := App/$(LIB_NAME).cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
-Jalapeno_Include_Paths := -IInclude -IApp -I$(SGX_SDK)/include -I./include
+# CommPact library source code
+CommPact_Cpp_Files := App/$(LIB_NAME).cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
+CommPact_Include_Paths := -IInclude -IApp -I$(SGX_SDK)/include -I./include
 
-Jalapeno_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(Jalapeno_Include_Paths)
+CommPact_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(CommPact_Include_Paths)
 
 # Three configuration modes - Debug, prerelease, release
 #   Debug - Macro DEBUG enabled.
 #   Prerelease - Macro NDEBUG and EDEBUG enabled.
 #   Release - Macro NDEBUG enabled.
 ifeq ($(SGX_DEBUG), 1)
-        Jalapeno_C_Flags += -DDEBUG -UNDEBUG -UEDEBUG
+        CommPact_C_Flags += -DDEBUG -UNDEBUG -UEDEBUG
 else ifeq ($(SGX_PRERELEASE), 1)
-        Jalapeno_C_Flags += -DNDEBUG -DEDEBUG -UDEBUG
+        CommPact_C_Flags += -DNDEBUG -DEDEBUG -UDEBUG
 else
-        Jalapeno_C_Flags += -DNDEBUG -UEDEBUG -UDEBUG
+        CommPact_C_Flags += -DNDEBUG -UEDEBUG -UDEBUG
 endif
 
-Jalapeno_Cpp_Flags := $(Jalapeno_C_Flags) -std=c++11
-Jalapeno_Link_Flags := $(SGX_COMMON_CFLAGS) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread
+CommPact_Cpp_Flags := $(CommPact_C_Flags) -std=c++11
+CommPact_Link_Flags := $(SGX_COMMON_CFLAGS) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread
 
 ifneq ($(SGX_MODE), HW)
-	Jalapeno_Link_Flags += -lsgx_uae_service_sim
+	CommPact_Link_Flags += -lsgx_uae_service_sim
 else
-	Jalapeno_Link_Flags += -lsgx_uae_service
+	CommPact_Link_Flags += -lsgx_uae_service
 endif
 
-Jalapeno_Cpp_Objects := $(Jalapeno_Cpp_Files:.cpp=.o)
+CommPact_Cpp_Objects := $(CommPact_Cpp_Files:.cpp=.o)
 
 Lib_Name := $(LIB_NAME)
 
@@ -146,16 +146,16 @@ App/Enclave_u.c: $(SGX_EDGER8R) Enclave/Enclave.edl
 	@echo "GEN  =>  $@"
 
 App/Enclave_u.o: App/Enclave_u.c
-	@$(CC) $(Jalapeno_C_Flags) -c $< -o $@
+	@$(CC) $(CommPact_C_Flags) -c $< -o $@
 	@echo "CC   <=  $<"
 
 App/%.o: App/%.cpp
-	@$(CXX) $(Jalapeno_Cpp_Flags) -c $< -o $@
+	@$(CXX) $(CommPact_Cpp_Flags) -c $< -o $@
 	@echo "CXX  <=  $<"
 
-$(Lib_Name): App/Enclave_u.o $(Jalapeno_Cpp_Objects)
-	@$(CXX) $^ -o lib$(Lib_Name).so.$(FULL_LIB_VERSION) -shared -Wl,-soname,lib$(Lib_Name).so.$(LIB_VERSION_MAJOR) $(Jalapeno_Link_Flags)
-	# @$(CXX) $^ -o $@ $(Jalapeno_Link_Flags)
+$(Lib_Name): App/Enclave_u.o $(CommPact_Cpp_Objects)
+	@$(CXX) $^ -o lib$(Lib_Name).so.$(FULL_LIB_VERSION) -shared -Wl,-soname,lib$(Lib_Name).so.$(LIB_VERSION_MAJOR) $(CommPact_Link_Flags)
+	# @$(CXX) $^ -o $@ $(CommPact_Link_Flags)
 	@(rm $(CURRENT_DIR)/lib$(Lib_Name).so.$(LIB_VERSION_MAJOR) 2>/dev/null || echo)
 	@ln -s $(CURRENT_DIR)/lib$(Lib_Name).so.$(FULL_LIB_VERSION) $(CURRENT_DIR)/lib$(Lib_Name).so.$(LIB_VERSION_MAJOR) 
 	@echo "LINK =>  $@"
@@ -185,7 +185,7 @@ $(Signed_Enclave_Name): $(Enclave_Name)
 .PHONY: clean
 
 clean:
-	@rm -f $(Lib_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(Jalapeno_Cpp_Objects) App/Enclave_u.* $(Enclave_Cpp_Objects) Enclave/Enclave_t.*
+	@rm -f $(Lib_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(CommPact_Cpp_Objects) App/Enclave_u.* $(Enclave_Cpp_Objects) Enclave/Enclave_t.*
 	@rm -f lib$(Lib_Name).so.$(FULL_LIB_VERSION) lib$(Lib_Name).so.$(LIB_VERSION_MAJOR)
 
 

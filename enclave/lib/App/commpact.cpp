@@ -32,7 +32,7 @@ commpact_status_t init_crypto_enclave(uint64_t *e_id,
   // https://software.intel.com/en-us/node/709072
   ret = sgx_create_enclave(enclave_filename, SGX_DEBUG_FLAG, &token, &updated,
                            enclave_id, NULL);
-  if (ret != 0) {
+  if (ret != SGX_SUCCESS) {
     printf("ERROR: failed (%x) to initialize SGX crypto enclave.\n", ret);
     return CP_ERROR;
   }

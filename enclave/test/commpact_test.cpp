@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #include "commpact.h"
-#include "include/status.h"
+#include "include/commpact_status.h"
 
 #include "commpact_test.h"
 

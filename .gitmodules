@@ -1,0 +1,6 @@
+[submodule "plexe-veins"]
+	path = plexe-veins
+	url = git@github.com:jericks-umich/plexe-veins.git
+[submodule "plexe-sumo"]
+	path = plexe-sumo
+	url = git@github.com:jericks-umich/plexe-sumo.git

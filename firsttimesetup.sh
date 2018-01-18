@@ -15,9 +15,9 @@ sudo apt-get install -y build-essential gcc g++ bison flex perl qt5-default \
 #TODO add the rest
 # For SUMO
 
-echo "============================="
-echo "= Compiling enclave code... ="
-echo "============================="
+echo "======================="
+echo "= Building Enclave... ="
+echo "======================="
 # compile enclave code
 pushd $THIS_DIR/enclave/lib
 make

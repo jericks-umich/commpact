@@ -8,7 +8,7 @@ Enclave_t.c
 Enclave_t.h
 *_test
 
-lib/
-include/
+/lib/
+/include/
 
-omnetpp-5.0/
+/omnetpp-5.0/

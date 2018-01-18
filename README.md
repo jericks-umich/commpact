@@ -5,7 +5,7 @@ Do not run `firsttimesetup.sh` multiple times.
 
 Run `rebuild.sh` to rebuild everything.
 
-You will need to source 'setenv' before running veins (Veins invokes SUMO).
+You will need to source `setenv` before running veins (Veins invokes SUMO).
 ~~~~
 . setenv
 ~~~~

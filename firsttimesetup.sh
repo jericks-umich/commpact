@@ -2,8 +2,6 @@
 
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# must download version 5.0 (not latest version) of OMNeT++ and place in this
-# directory before beginning
 
 echo "==============================================="
 echo "= Installing OMNeT++ and SUMO dependencies... ="
@@ -14,7 +12,6 @@ sudo apt-get install -y build-essential gcc g++ bison flex perl qt5-default \
 	tcl-dev tk-dev libxml2-dev zlib1g-dev default-jre doxygen graphviz \
 	libwebkitgtk-3.0-0 openjdk-6-jre autoconf libtool libproj-dev libgdal-dev \
 	libfox-1.6-dev libxerces-c-dev r-base libqt4-dev 
-
 #TODO add the rest
 # For SUMO
 
@@ -32,10 +29,12 @@ echo "===================================================="
 # symlink the .h files we need into the include directory
 mkdir -p $THIS_DIR/include
 ln -s $THIS_DIR/enclave/lib/App/commpact.h $THIS_DIR/include/
+ln -s $THIS_DIR/enclave/lib/include/commpact_status.h $THIS_DIR/include/
 
 # symlink the .so files we need into the lib directory
 mkdir -p $THIS_DIR/lib
 ln -s $THIS_DIR/enclave/lib/libcommpact.so.1 $THIS_DIR/lib
+ln -s $THIS_DIR/enclave/lib/libcommpact.so.1 $THIS_DIR/lib/libcommpact.so
 
 # symlink the enclave .so to /tmp
 ln -s $THIS_DIR/enclave/lib/enclave.signed.so /tmp/
@@ -45,7 +44,7 @@ echo "= Downloading OMNet++... ="
 echo "=========================="
 # download OMNeT++
 pushd $THIS_DIR
-wget -nv --user-agent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0' --header='Referer: https://www.omnetpp.org/component/jdownloads/category/32-release-older-versions?start=10' https://www.omnetpp.org/component/jdownloads/send/32-release-older-versions/2305-omnetpp-50-linux -O omnetpp-5.0.tgz
+wget --user-agent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0' --header='Referer: https://www.omnetpp.org/component/jdownloads/category/32-release-older-versions?start=10' https://www.omnetpp.org/component/jdownloads/send/32-release-older-versions/2305-omnetpp-50-linux -O omnetpp-5.0.tgz
 echo "====================="
 echo "= Unpacking OMNet++ ="
 echo "====================="
@@ -55,10 +54,17 @@ echo "===================="
 echo "= Building OMNet++ ="
 echo "===================="
 cd omnetpp-5.0/
-source ./setenv
+source ./setenv -f
 ./configure
 make -j$(nproc)
 popd
+
+# check out the sumo and veins submodules
+echo "=============================="
+echo "= Checking out submodules... ="
+echo "=============================="
+git submodule init
+git submodule update
 
 
 echo "===================="

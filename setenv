@@ -10,5 +10,5 @@ case "$-" in
 	fi  
 esac
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$THIS_DIR/lib
+export LD_LIBRARY_PATH=$THIS_DIR/lib
 export PATH=$PATH:$THIS_DIR/plexe-sumo/sumo/bin:$THIS_DIR/omnetpp-5.0/bin

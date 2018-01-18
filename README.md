@@ -1,7 +1,8 @@
 # commpact
 
-Run configure.sh the first time to set up the build environment.
+Run firsttimesetup.sh to download, configure, and build everything.
 
-Run build.sh to rebuild everything.
+Do not run firsttimesetup.sh multiple times.
 
-This is not final
+Run rebuild.sh to rebuild everything.
+

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+case "$-" in
+	*i*) ;;
+	*)  if [ "$1" != "-f" ]; then # allow use from scripts, as ". setenv -f"
+		echo "Error: not a login shell -- run this script as 'source setenv' or '. setenv'"
+		exit 1
+	fi  
+esac
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$THIS_DIR/lib
+export PATH=$PATH:$THIS_DIR/plexe-sumo/sumo/bin:$THIS_DIR/omnetpp-5.0/bin

@@ -54,3 +54,9 @@ commpact_status_t enclave_status(uint64_t e_id) {
   }
   return CP_SUCCESS;
 }
+
+commpact_status_t check_allowed_speed(uint64_t enclave_id, double speed,
+                                      bool *verdict) {
+  *verdict = true;
+  return CP_SUCCESS;
+}

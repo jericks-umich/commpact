@@ -29,7 +29,7 @@ echo "===================================================="
 # symlink the .h files we need into the include directory
 mkdir -p $THIS_DIR/include
 ln -s $THIS_DIR/enclave/lib/App/commpact.h $THIS_DIR/include/
-ln -s $THIS_DIR/enclave/lib/include/commpact_status.h $THIS_DIR/include/
+ln -s $THIS_DIR/enclave/lib/include/commpact_types.h $THIS_DIR/include/
 
 # symlink the .so files we need into the lib directory
 mkdir -p $THIS_DIR/lib

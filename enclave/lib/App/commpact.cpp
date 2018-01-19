@@ -17,8 +17,7 @@
 // API Exposed Functions //
 ///////////////////////////
 // Initialize instance of crypto enclave
-commpact_status_t init_crypto_enclave(uint64_t *e_id,
-                                      const char *enclave_filename) {
+commpact_status_t initEnclave(uint64_t *e_id) {
   sgx_enclave_id_t *enclave_id =
       (sgx_enclave_id_t *)e_id; // casting it to the correct type -- we don't
                                 // want to require sgx types outside of the .so
@@ -30,7 +29,7 @@ commpact_status_t init_crypto_enclave(uint64_t *e_id,
   // create new enclave
   // https://software.intel.com/sites/products/sgx-sdk-users-guide-windows/Content/sgx_create_enclave.htm
   // https://software.intel.com/en-us/node/709072
-  ret = sgx_create_enclave(enclave_filename, SGX_DEBUG_FLAG, &token, &updated,
+  ret = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated,
                            enclave_id, NULL);
   if (ret != SGX_SUCCESS) {
     printf("ERROR: failed (%x) to initialize SGX crypto enclave.\n", ret);
@@ -39,24 +38,44 @@ commpact_status_t init_crypto_enclave(uint64_t *e_id,
   return CP_SUCCESS;
 }
 
-commpact_status_t enclave_status(uint64_t e_id) {
-  sgx_enclave_id_t enclave_id = (sgx_enclave_id_t)e_id;
-  sgx_status_t status = SGX_SUCCESS;
-  sgx_status_t retval = SGX_SUCCESS;
-  status = enclave_status(enclave_id, &retval);
-  if (status != SGX_SUCCESS) {
-    printf("ERROR: failed to check status of SGX crypto enclave.\n");
-    return CP_ERROR;
-  }
-  if (retval != SGX_SUCCESS) {
-    printf("WARN: bad status of SGX crypto enclave.\n");
-    return CP_WARN;
-  }
+// This function will be called immediately after setting up the enclave and
+// should generate a keypair. The private key should remain in the enclave, but
+// the public key should be returned.
+// Later calls to sign messages should use this private key.
+// The public keys for each vehicle will be gathered and then passed to the
+// enclave using setInitialPubKeys() below. Verification of these messages
+// should use these public keys.
+// The cp_ec256_public_t type should be identical to the _sgx_ec256_public_t
+// type. You should be able to simply cast it.
+commpact_status_t initializeKeys(uint64_t enclave_id,
+                                 cp_ec256_public_t *pubkey) {
   return CP_SUCCESS;
 }
 
-commpact_status_t check_allowed_speed(uint64_t enclave_id, double speed,
-                                      bool *verdict) {
+// TODO: eventually find the place in plexe where the scenario is set up and
+// call a single setInitialParameters() function.
+
+// This position in the platoon is set when the vehicle is initialized.
+// Use this function to set the position of this vehicle in the platoon during
+// the initial setup
+commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
+  printf("Position: %d\n", position);
+  return CP_SUCCESS;
+}
+
+// pass a list of pubkeys to the enclave for all the other vehicles in the
+// platoon.
+// the enclave's own pubkey will be present in the list, but can be ignored.
+commpact_status_t setInitialPubKeys(uint64_t enclave_id,
+                                    cp_ec256_public_t *pubkeys, int nkeys) {
+  return CP_SUCCESS;
+}
+
+// This is the main purpose of the enclave -- to check whether a given speed is
+// approved, and to deny speed changes if it is not.
+// Return true to approve the speed change, and false to reject it.
+commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
+                                    bool *verdict) {
   *verdict = true;
   return CP_SUCCESS;
 }

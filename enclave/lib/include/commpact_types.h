@@ -8,6 +8,7 @@ typedef enum {
   CP_CANT_OPEN_FILE = CP_MK_ERROR(0x8001),
   CP_ERROR = CP_MK_ERROR(0x8002),
   CP_WARN = CP_MK_ERROR(0x8004),
+  CP_INVALID_PARAMETER = CP_MK_ERROR(0x8008),
 } commpact_status_t;
 
 #define CP_ECP256_KEY_SIZE 32

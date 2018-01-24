@@ -2,6 +2,11 @@
 
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+if [ -z "$DISPLAY" ]; then
+	echo "\$DISPLAY must be set"
+	exit
+fi
+
 
 echo "==============================================="
 echo "= Installing OMNeT++ and SUMO dependencies... ="

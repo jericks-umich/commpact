@@ -50,6 +50,8 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
     return CP_INVALID_PARAMETER;
   }
 
+  // TODO: DO STUFF WITH ENCLAVE HERE
+
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
   InitialSetup::getInstance().enclave_id_list[position] = enclave_id;
@@ -71,7 +73,7 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
 // type. You should be able to simply cast it.
 commpact_status_t initializeKeys(uint64_t enclave_id,
                                  cp_ec256_public_t *pubkey) {
-  // generate keypair in enclave here
+  // TODO: generate keypair in enclave here
 
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
@@ -94,7 +96,8 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
       // few vehicles, that should be okay. When we add the last vehicle, it
       // should be a contiguous list of pubkeys and should overwrite and
       // previous sparse list we told the enclave about.
-      setInitialPubKeys(enclave_id, InitialSetup::getInstance().pubkey_list,
+      setInitialPubKeys(InitialSetup::getInstance().enclave_id_list[i],
+                        InitialSetup::getInstance().pubkey_list,
                         InitialSetup::getInstance().n_vehicles);
     }
   }
@@ -108,6 +111,7 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 // Return true to approve the speed change, and false to reject it.
 commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
                                     bool *verdict) {
+  // TODO
   *verdict = true;
   return CP_SUCCESS;
 }
@@ -121,5 +125,6 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 // the enclave's own pubkey will be present in the list, but can be ignored.
 static commpact_status_t
 setInitialPubKeys(uint64_t enclave_id, cp_ec256_public_t *pubkeys, int nkeys) {
+  // TODO
   return CP_SUCCESS;
 }

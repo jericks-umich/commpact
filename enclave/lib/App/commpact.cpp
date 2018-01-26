@@ -12,6 +12,9 @@
 #include "commpact.h"
 #include "initialsetup.h"
 
+#define INITIAL_SETUP InitialSetup::getInstance()
+#define GET_POSITION InitialSetup::getInstance().getPosition
+
 // https://software.intel.com/en-us/articles/intel-software-guard-extensions-developing-a-sample-enclave-application
 
 ///////////////////////////
@@ -54,9 +57,9 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
 
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
-  InitialSetup::getInstance().enclave_id_list[position] = enclave_id;
-  InitialSetup::getInstance().used_list[position] = true;
-  InitialSetup::getInstance().n_vehicles++;
+  INITIAL_SETUP.enclave_id_list[position] = enclave_id;
+  INITIAL_SETUP.used_list[position] = true;
+  INITIAL_SETUP.n_vehicles++;
 
   return CP_SUCCESS;
 }
@@ -73,32 +76,38 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
 // type. You should be able to simply cast it.
 commpact_status_t initializeKeys(uint64_t enclave_id,
                                  cp_ec256_public_t *pubkey) {
+  printf("Initializing keys for vehicle %d, enclave %lu\n",
+         GET_POSITION(enclave_id), enclave_id);
   // TODO: generate keypair in enclave here
 
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
-  for (int i = 0; i < COMMPACT_MAX_ENCLAVES; i++) {
-    // iterate over enclave_ids to find position (index i)
-    if (InitialSetup::getInstance().enclave_id_list[i] == enclave_id) {
-      // store a copy of the pubkey in the i'th position of the pubkey_list
-      memcpy(&InitialSetup::getInstance().pubkey_list[i], pubkey,
-             sizeof(cp_ec256_public_t));
-      break;
-    }
+  int position = GET_POSITION(enclave_id);
+  if (position != -1) {
+    memcpy(&INITIAL_SETUP.pubkey_list[position], pubkey,
+           sizeof(cp_ec256_public_t));
   }
+  // for (int i = 0; i < COMMPACT_MAX_ENCLAVES; i++) {
+  //  // iterate over enclave_ids to find position (index i)
+  //  if (InitialSetup::getInstance().enclave_id_list[i] == enclave_id) {
+  //    // store a copy of the pubkey in the i'th position of the pubkey_list
+  //    memcpy(&InitialSetup::getInstance().pubkey_list[i], pubkey,
+  //           sizeof(cp_ec256_public_t));
+  //    break;
+  //  }
+  //}
 
   // Since we've updated the list of public keys, we should update each enclave
   // with the new list
   for (int i = 0; i < COMMPACT_MAX_ENCLAVES; i++) {
-    if (InitialSetup::getInstance().used_list[i]) {
+    if (INITIAL_SETUP.used_list[i]) {
       // We're making an assumption here that the first N positions in this
       // list are filled. If this assumption doesn't hold true for the first
       // few vehicles, that should be okay. When we add the last vehicle, it
       // should be a contiguous list of pubkeys and should overwrite and
       // previous sparse list we told the enclave about.
-      setInitialPubKeys(InitialSetup::getInstance().enclave_id_list[i],
-                        InitialSetup::getInstance().pubkey_list,
-                        InitialSetup::getInstance().n_vehicles);
+      setInitialPubKeys(INITIAL_SETUP.enclave_id_list[i],
+                        INITIAL_SETUP.pubkey_list, INITIAL_SETUP.n_vehicles);
     }
   }
 

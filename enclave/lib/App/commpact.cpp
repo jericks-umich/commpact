@@ -87,15 +87,6 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
     memcpy(&INITIAL_SETUP.pubkey_list[position], pubkey,
            sizeof(cp_ec256_public_t));
   }
-  // for (int i = 0; i < COMMPACT_MAX_ENCLAVES; i++) {
-  //  // iterate over enclave_ids to find position (index i)
-  //  if (InitialSetup::getInstance().enclave_id_list[i] == enclave_id) {
-  //    // store a copy of the pubkey in the i'th position of the pubkey_list
-  //    memcpy(&InitialSetup::getInstance().pubkey_list[i], pubkey,
-  //           sizeof(cp_ec256_public_t));
-  //    break;
-  //  }
-  //}
 
   // Since we've updated the list of public keys, we should update each enclave
   // with the new list
@@ -111,6 +102,13 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
     }
   }
 
+  return CP_SUCCESS;
+}
+
+// Called during initialization, passes a pair of initial speed bounds to the
+// enclave for later use in checkAllowedSpeed()
+commpact_status_t setInitialSpeedBVounds(uint64_t enclave_id, double lower,
+                                         double upper) {
   return CP_SUCCESS;
 }
 

@@ -107,8 +107,16 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 
 // Called during initialization, passes a pair of initial speed bounds to the
 // enclave for later use in checkAllowedSpeed()
-commpact_status_t setInitialSpeedBVounds(uint64_t enclave_id, double lower,
-                                         double upper) {
+commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
+                                        double upper) {
+  return CP_SUCCESS;
+}
+
+// Called during initialization, passes the current simulation time + recovery
+// phase duration to the enclave so it can set the initial recovery phase
+// timeout
+commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
+                                                 double timeout) {
   return CP_SUCCESS;
 }
 

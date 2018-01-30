@@ -12,6 +12,8 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
                                  cp_ec256_public_t *pubkey);
 commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
                                         double upper);
+commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
+                                                 double timeout);
 commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
                                     bool *verdict);
 

@@ -13,6 +13,8 @@ enclave {
 		public sgx_status_t initial_ec256_key_pair([out] sgx_ec256_public_t* pub);
 	};
 	untrusted {
+		// This function is used for debugging
+		int ocall_prints([in, string] const char* str);
 	};
 };
 

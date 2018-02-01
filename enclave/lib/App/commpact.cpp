@@ -82,7 +82,7 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 	sgx_status_t retval = SGX_SUCCESS;
 	sgx_status_t status = SGX_SUCCESS;
 	
-	status = initial_ec256_key_pair(enclave_id, &retval, pubkey);
+	status = initial_ec256_key_pair(enclave_id, &retval, (sgx_ec256_public_t*)pubkey);
 	
 	if(status != SGX_SUCCESS){
 		return CP_ERROR;	

@@ -143,3 +143,11 @@ setInitialPubKeys(uint64_t enclave_id, cp_ec256_public_t *pubkeys, int nkeys) {
   // TODO
   return CP_SUCCESS;
 }
+
+
+//////////////////////
+//Ocalls in Enclave///
+//////////////////////
+int ocall_prints(const char* str){
+	fprintf(stderr, "The enclave encountered issues: %s\n", str);
+}

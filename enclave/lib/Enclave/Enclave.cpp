@@ -15,7 +15,7 @@ ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 // PUBLIC //
 ////////////
 
-//This is the function to generate a rsa key pair.
+//This is the function to generate a ecc256 key pair.
 //When called, generate a key-pair and return the pub_key 
 public sgx_status_t initial_ec256_key_pair([out] sgx_ec256_public_t* pub){
 	int retval = 0;

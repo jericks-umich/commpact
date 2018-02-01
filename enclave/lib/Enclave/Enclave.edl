@@ -8,7 +8,7 @@ enclave {
 		// 
 		public sgx_status_t enclave_status();
 		
-		//This is the function to generate a rsa key pair. 
+		//This is the function to generate a ecc256 key pair. 
 		//When called, generate a key-pair and return the pub_key
 		public sgx_status_t initial_ec256_key_pair([out] sgx_ec256_public_t* pub);
 	};

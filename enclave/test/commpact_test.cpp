@@ -45,13 +45,13 @@ int test_initializeKeys(uint64_t e_id, cp_ec256_public_t *pubkey){
 		printf("<--%d%s ecc256 key pair generated successfully-->",
 			i+1 , i>2?"th":(i>1?"rd":(i>0?"nd":"st")));
 		printf("<--Public key value-->");
-		for(int j = 0; j < SGX_ECP256_KEY_SIZE; ++j ){
-			printf("x: %hhu\n",(pub_keys_generated+i)->x[j]);
-			printf("y: %hhu\n",(pub_keys_generated+i)->y[j]);
+		for(int j = 0; j < CP_ECP256_KEY_SIZE; ++j ){
+			printf("x: %hhu\n",(pub_keys_generated+i)->gx[j]);
+			printf("y: %hhu\n",(pub_keys_generated+i)->gy[j]);
 		}
 		fflush(stdout);
 	}
-	memcpy(pubkey, pub_keys_generated[TEST_ROUNDS_FOR_KENGEN-1], sizeof(cp_ec256_public_t));
+	memcpy(pubkey, &pub_keys_generated[TEST_ROUNDS_FOR_KENGEN-1], sizeof(cp_ec256_public_t));
 	return 0;	
 }
 
@@ -76,7 +76,7 @@ int test_initEnclave(uint64_t* e_id){
 int main(int argc, char *argv[]) {
   uint64_t enclave_id = 0;
   int test_status = 1;
-  cp_ec25_public_t pubkey;
+  cp_ec256_public_t pubkey;
   // Test Enclave Initiation
   printf("<------TESTING ENCLAVE INITIATION------>\n");
   test_status = test_initEnclave(&enclave_id);

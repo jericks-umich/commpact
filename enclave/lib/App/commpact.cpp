@@ -78,8 +78,15 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
                                  cp_ec256_public_t *pubkey) {
   printf("Initializing keys for vehicle %d, enclave %lu\n",
          GET_POSITION(enclave_id), enclave_id);
-  // TODO: generate keypair in enclave here
 
+	sgx_status_t retval = SGX_SUCCESS;
+	sgx_status_t status = SGX_SUCCESS;
+	
+	status = initial_ec256_key_pair(enclave_id, &retval, (sgx_ec256_public_t*)pubkey);
+	
+	if(status != SGX_SUCCESS){
+		return CP_ERROR;	
+	}
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
   int position = GET_POSITION(enclave_id);
@@ -142,4 +149,12 @@ static commpact_status_t
 setInitialPubKeys(uint64_t enclave_id, cp_ec256_public_t *pubkeys, int nkeys) {
   // TODO
   return CP_SUCCESS;
+}
+
+
+//////////////////////
+//Ocalls in Enclave///
+//////////////////////
+int ocall_prints(const char* str){
+	fprintf(stderr, "The enclave encountered issues: %s\n", str);
 }

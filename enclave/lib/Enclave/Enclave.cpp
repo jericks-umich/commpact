@@ -17,7 +17,7 @@ ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 
 //This is the function to generate a ecc256 key pair.
 //When called, generate a key-pair and return the pub_key 
-public sgx_status_t initial_ec256_key_pair([out] sgx_ec256_public_t* pub){
+sgx_status_t initial_ec256_key_pair(sgx_ec256_public_t* pub){
 	int retval = 0;
 	int key_byte_index = 0; //index to the key byte in pub or priv in key_pair
 	sgx_status_t status = SGX_SUCCESS;
@@ -42,7 +42,7 @@ public sgx_status_t initial_ec256_key_pair([out] sgx_ec256_public_t* pub){
 	}
 
 	//Generating key pair with eec256 context
-	status = sgx_ecc256_create_key_pair(&(key_pair->pub), &(key_pair->priv));
+	status = sgx_ecc256_create_key_pair(&(key_pair->priv), &(key_pair->pub),ecc_handle);
 	if(status != SGX_SUCCESS){
 		char msg[] = "ERROR: failed to generate ecc256 key pair";
 		ocall_prints(&retval, msg);

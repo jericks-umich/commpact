@@ -95,6 +95,6 @@ echo "====================="
 pushd $THIS_DIR/plexe-veins
 git pull
 git checkout plexe-2.0
-./configure
+CPPFLAGS="-I/$THIS_DIR/include" ./configure
 make -j$(nproc)
 popd

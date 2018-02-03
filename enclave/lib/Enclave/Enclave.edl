@@ -11,7 +11,18 @@ enclave {
 		//This is the function to generate a ecc256 key pair. 
 		//When called, generate a key-pair and return the pub_key
 		public sgx_status_t initialEc256KeyPair([out] sgx_ec256_public_t* pub);
-
+		
+		//This is the function to set vehicle's position
+		public sgx_status_t setPosition([in] int* pos);
+	
+		//This is the function to set all pubkeys of vehicles in the platoon
+		//It takes 2 parameters
+		//pubkeys : sgx_ec256_public_t pubkeys*
+		//	A pointer to an array of pubkeys to be set, ordered by position in platoon
+		//platoon_len : uint8_t 
+		//	The length of platoon
+		public sgx_status_t 
+		setPubKeys([in,count = platoon_len_in]sgx_ec256_public_t* pub_keys_in, uint64_t platoon_len_in);
 	};
 	untrusted {
 		// This function is used for debugging

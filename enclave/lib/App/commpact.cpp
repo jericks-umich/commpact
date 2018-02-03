@@ -82,9 +82,10 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 	sgx_status_t retval = SGX_SUCCESS;
 	sgx_status_t status = SGX_SUCCESS;
 	
-	status = initial_ec256_key_pair(enclave_id, &retval, (sgx_ec256_public_t*)pubkey);
+	status = initialEc256KeyPair(enclave_id, &retval, (sgx_ec256_public_t*)pubkey);
 	
 	if(status != SGX_SUCCESS){
+		printf("Failed initialize keys\n");
 		return CP_ERROR;	
 	}
   // Part of InitialSetup hack
@@ -155,6 +156,6 @@ setInitialPubKeys(uint64_t enclave_id, cp_ec256_public_t *pubkeys, int nkeys) {
 //////////////////////
 //Ocalls in Enclave///
 //////////////////////
-int ocall_prints(const char* str){
-	fprintf(stderr, "The enclave encountered issues: %s\n", str);
+int ocallPrints(const char* str){
+	printf("The enclave encountered issues: %s\n", str);
 }

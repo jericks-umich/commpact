@@ -17,7 +17,7 @@ ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 
 //This is the function to generate a ecc256 key pair.
 //When called, generate a key-pair and return the pub_key 
-sgx_status_t initial_ec256_key_pair(sgx_ec256_public_t* pub){
+sgx_status_t initialEc256KeyPair(sgx_ec256_public_t* pub){
 	int retval = 0;
 	int key_byte_index = 0; //index to the key byte in pub or priv in key_pair
 	sgx_status_t status = SGX_SUCCESS;
@@ -28,7 +28,7 @@ sgx_status_t initial_ec256_key_pair(sgx_ec256_public_t* pub){
 		key_pair = (ec256_key_pair_t*) calloc(1,sizeof(ec256_key_pair_t));
 		if(key_pair == NULL){
 			char msg[] = "ERROR: allocate memory for key_pair failed.";
-			ocall_prints(&retval, msg);
+			ocallPrints(&retval, msg);
 			return SGX_ERROR_OUT_OF_MEMORY;
 		}  
 	}
@@ -37,7 +37,7 @@ sgx_status_t initial_ec256_key_pair(sgx_ec256_public_t* pub){
 	status = sgx_ecc256_open_context(&ecc_handle);
 	if( status != SGX_SUCCESS ){
 		char msg[] = "ERROR: failed to open ecc256 context";
-		ocall_prints(&retval, msg);
+		ocallPrints(&retval, msg);
 		return status;
 	}
 
@@ -45,7 +45,7 @@ sgx_status_t initial_ec256_key_pair(sgx_ec256_public_t* pub){
 	status = sgx_ecc256_create_key_pair(&(key_pair->priv), &(key_pair->pub),ecc_handle);
 	if(status != SGX_SUCCESS){
 		char msg[] = "ERROR: failed to generate ecc256 key pair";
-		ocall_prints(&retval, msg);
+		ocallPrints(&retval, msg);
 		return status;
 	}
 
@@ -53,7 +53,7 @@ sgx_status_t initial_ec256_key_pair(sgx_ec256_public_t* pub){
 	status = sgx_ecc256_close_context(ecc_handle);
 	if(status != SGX_SUCCESS){
 		char msg[] = "ERROR: failed to close ecc256 context";
-		ocall_prints(&retval, msg);
+		ocallPrints(&retval, msg);
 		return status;
 	} 
 

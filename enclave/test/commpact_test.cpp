@@ -26,25 +26,24 @@ pubkey : cp_ec256_public_t*
 
 Returns
 -------
-retval : int
-	0 if success, 1 if fail	
+retval : commpact_status_t 
 */
-int test_initializeKeys(uint64_t e_id, cp_ec256_public_t *pubkey){
+commpact_status_t testInitializeKeys(uint64_t e_id, cp_ec256_public_t *pubkey){
 
 	cp_ec256_public_t pub_keys_generated[TEST_ROUNDS_FOR_KENGEN];
 	
 	commpact_status_t status = CP_SUCCESS;
-
+	memset(pub_keys_generated, 0 , TEST_ROUNDS_FOR_KENGEN*sizeof(cp_ec256_public_t));
 	for(int i = 0; i < TEST_ROUNDS_FOR_KENGEN ; ++i ){
-		status = initializeKeys(e_id, pub_keys_generated + i);
+		status = initializeKeys(e_id, &pub_keys_generated[i]);
 		if( status != CP_SUCCESS){
-			return 1;
+			return status;
 		}
 		
 		//If success, print out the pubkey
 		printf("<--%d%s ecc256 key pair generated successfully-->",
 			i+1 , i>2?"th":(i>1?"rd":(i>0?"nd":"st")));
-		printf("<--Public key value-->");
+		printf("<--Public key value-->\n");
 		for(int j = 0; j < CP_ECP256_KEY_SIZE; ++j ){
 			printf("x: %hhu\n",(pub_keys_generated+i)->gx[j]);
 			printf("y: %hhu\n",(pub_keys_generated+i)->gy[j]);
@@ -52,7 +51,7 @@ int test_initializeKeys(uint64_t e_id, cp_ec256_public_t *pubkey){
 		fflush(stdout);
 	}
 	memcpy(pubkey, &pub_keys_generated[TEST_ROUNDS_FOR_KENGEN-1], sizeof(cp_ec256_public_t));
-	return 0;	
+	return CP_SUCCESS;	
 }
 
 
@@ -64,12 +63,11 @@ e_id: uint64_t*
 	the pointer to a e_id
 Returns
 -------
-retval : int
-	0 if success, other number if fail
+retval : commpact_status_t
 */
-int test_initEnclave(uint64_t* e_id){
+commpact_status_t testInitEnclave(uint64_t* e_id){
 	commpact_status_t status = initEnclave(e_id);
-	return status == CP_SUCCESS? 0:1;
+	return status;
 }
 
 
@@ -79,15 +77,15 @@ int main(int argc, char *argv[]) {
   cp_ec256_public_t pubkey;
   // Test Enclave Initiation
   printf("<------TESTING ENCLAVE INITIATION------>\n");
-  test_status = test_initEnclave(&enclave_id);
-  assert(!test_status);
+  test_status = testInitEnclave(&enclave_id);
+  assert(test_status == CP_SUCCESS);
   printf("<------ENCLAVE INITIATION SUCCEED!\n");
   fflush(stdout);
 
   // Test Enclave Generating ecc256 key pair
   printf("<------TEST GENERATING ECC KEY PAIR----->\n");
-  test_status = test_initializeKeys(enclave_id, &pubkey);
-  assert(!test_status);
+  test_status = testInitializeKeys(enclave_id, &pubkey);
+  assert(test_status == CP_SUCCESS);
   printf("<------ECC KEY PAIR GENERATED------>\n");
   fflush(stdout);
   return 0;

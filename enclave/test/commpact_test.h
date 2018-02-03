@@ -15,10 +15,9 @@ pubkey : cp_ec256_public_t*
 
 Returns
 -------
-retval : int
-	 0 if success, others if fail	
+retval : commpact_status_t
 */
-int test_initializeKeys(uint64_t e_id, cp_ec256_public_t *pubkey);
+commpact_status_t testInitializeKeys(uint64_t e_id, cp_ec256_public_t *pubkey);
 
 
 /*
@@ -29,9 +28,8 @@ e_id: uint64_t*
 	the pointer to a e_id
 Returns
 -------
-retval : int
-	0 if success, others` if fail
+retval : commpact_status_t
 */
-int test_initEnclave(uint64_t* e_id);
+commpact_status_t testInitEnclave(uint64_t* e_id);
 
 #endif // COMMPACT_H

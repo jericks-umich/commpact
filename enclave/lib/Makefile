@@ -57,7 +57,7 @@ else
 endif
 
 # CommPact library source code
-CommPact_Cpp_Files := App/$(LIB_NAME).cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
+CommPact_Cpp_Files := App/$(LIB_NAME).cpp App/ecu.cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
 CommPact_Include_Paths := -IInclude -IApp -I$(SGX_SDK)/include -I./include
 
 CommPact_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(CommPact_Include_Paths)

@@ -22,9 +22,20 @@ enclave {
 		//platoon_len : uint8_t 
 		//	The length of platoon
 		public sgx_status_t 
-		setPubKeys([in,count = platoon_len_in]sgx_ec256_public_t* pub_keys_in, uint64_t platoon_len_in);
+		setPubKeys([in,count = platoon_len_in]sgx_ec256_public_t* pub_keys_in, uint8_t platoon_len_in);
+
+
+		/****************
+		*DEBUG FUNCTIONS*
+		****************/
+
 	};
 	untrusted {
+		
+		/****************
+		*DEBUG FUNCTIONS*
+		****************/
+
 		// This function is used for debugging
 		int ocallPrints([in, string] const char* str);
 	};

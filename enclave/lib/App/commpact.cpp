@@ -56,10 +56,11 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
   sgx_status_t status = SGX_SUCCESS;
 
   status = setPosition(enclave_id, &retval, &position);
-  if(status != SGX_SUCCESS){
-	printf("failed set position: enclave : %u, position : %d\n", enclave_id, position);
-	return CP_ERROR;
-  }  
+  if (status != SGX_SUCCESS) {
+    printf("failed set position: enclave : %u, position : %d\n", enclave_id,
+           position);
+    return CP_ERROR;
+  }
 
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
@@ -85,15 +86,16 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
   printf("Initializing keys for vehicle %d, enclave %lu\n",
          GET_POSITION(enclave_id), enclave_id);
 
-	sgx_status_t retval = SGX_SUCCESS;
-	sgx_status_t status = SGX_SUCCESS;
-	
-	status = initialEc256KeyPair(enclave_id, &retval, (sgx_ec256_public_t*)pubkey);
-	
-	if(status != SGX_SUCCESS){
-		printf("Failed initialize keys\n");
-		return CP_ERROR;	
-	}
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status =
+      initialEc256KeyPair(enclave_id, &retval, (sgx_ec256_public_t *)pubkey);
+
+  if (status != SGX_SUCCESS) {
+    printf("Failed initialize keys\n");
+    return CP_ERROR;
+  }
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
   int position = GET_POSITION(enclave_id);
@@ -154,22 +156,22 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 // the enclave's own pubkey will be present in the list, but can be ignored.
 static commpact_status_t
 setInitialPubKeys(uint64_t enclave_id, cp_ec256_public_t *pubkeys, int nkeys) {
-	sgx_status_t status = SGX_SUCCESS;
-	sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+  sgx_status_t retval = SGX_SUCCESS;
 
-  	status = setPubKeys(enclave_id, &retval, (sgx_ec256_public_t*)pubkeys, nkeys);
+  status =
+      setPubKeys(enclave_id, &retval, (sgx_ec256_public_t *)pubkeys, nkeys);
 
-	if(status != SGX_SUCCESS){
-		printf("Set public keys failed\n");
-		return CP_ERROR;
-	}
-	return CP_SUCCESS;
+  if (status != SGX_SUCCESS) {
+    printf("Set public keys failed\n");
+    return CP_ERROR;
+  }
+  return CP_SUCCESS;
 }
 
-
 //////////////////////
-//Ocalls in Enclave///
+// Ocalls in Enclave///
 //////////////////////
-int ocallPrints(const char* str){
-	printf("The enclave encountered issues: %s\n", str);
+int ocallPrints(const char *str) {
+  printf("The enclave encountered issues: %s\n", str);
 }

@@ -1,8 +1,7 @@
 #ifndef COMMPACT_H
 #define COMMPACT_H
 
-#define ENCLAVE_FILENAME                                                       \
-  "/home/chshibo/workspace/commpact/enclave/lib/enclave.signed.so"
+#define ENCLAVE_FILENAME "../lib/enclave.signed.so"
 #define KEY_STORE_FILENAME "/tmp/sgx_ec256_key_store.dump"
 
 /*

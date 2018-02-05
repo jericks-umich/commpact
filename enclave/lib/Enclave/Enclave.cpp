@@ -13,7 +13,7 @@
 ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 int position = 0;
 sgx_ec256_public_t *pub_keys = NULL;
-uint64_t platoon_len = 0;
+uint8_t platoon_len = 0;
 ////////////
 // PUBLIC //
 ////////////
@@ -80,7 +80,7 @@ sgx_status_t setPosition(int *pos) {
 // platoon_len : uint8_t
 //	The length of platoon
 sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
-                        uint64_t platoon_len_in) {
+                        uint8_t platoon_len_in) {
   int retval = 0;
 
   // Free the memory if it has been allocated previously

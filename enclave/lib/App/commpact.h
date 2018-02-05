@@ -19,7 +19,4 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 
 // Private (static) functions
 
-static commpact_status_t
-setInitialPubKeys(uint64_t enclave_id, cp_ec256_public_t *pubkeys, int nkeys);
-
 #endif // COMMPACT_APP_H

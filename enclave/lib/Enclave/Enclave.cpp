@@ -76,7 +76,7 @@ sgx_status_t setPosition(int *pos) {
 // It takes 2 parameters
 // pubkeys : sgx_ec256_public_t pubkeys*
 //	A pointer to an array of pubkeys to be set, ordered by position in
-//platoon
+// platoon
 // platoon_len : uint8_t
 //	The length of platoon
 sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,

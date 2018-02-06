@@ -14,6 +14,11 @@ ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 int position = 0;
 sgx_ec256_public_t *pub_keys = NULL;
 uint8_t platoon_len = 0;
+
+double lower_speed;
+double upper_speed;
+double recovery_phase_timeout;
+
 ////////////
 // PUBLIC //
 ////////////
@@ -104,6 +109,17 @@ sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
   // Set the length of the platoon
   platoon_len = platoon_len_in;
 
+  return SGX_SUCCESS;
+}
+
+sgx_status_t setInitialSpeedBounds(double lower, double upper) {
+  lower_speed = lower;
+  upper_speed = upper;
+  return SGX_SUCCESS;
+}
+
+sgx_status_t setInitialRecoveryPhaseTimeout(double timeout) {
+  recovery_phase_timeout = timeout;
   return SGX_SUCCESS;
 }
 

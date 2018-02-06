@@ -134,6 +134,20 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 // enclave for later use in checkAllowedSpeed()
 commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
                                         double upper) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  // error checking bounds for lower and upper
+  /*if () {
+    return CP_INVALID_PARAMETER;
+  }*/
+
+  status = setInitialSpeedBounds(enclave_id, &retval, lower, upper);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: setInitialSpeedBounds(), enclave: %lu\n", enclave_id);
+    return CP_ERROR;
+  }
+
   return CP_SUCCESS;
 }
 
@@ -142,6 +156,21 @@ commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
 // timeout
 commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
                                                  double timeout) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  // error checking bounds for timeout
+  /*if () {
+    return CP_INVALID_PARAMETER;
+  }*/
+
+  status = setInitialRecoveryPhaseTimeout(enclave_id, &retval, timeout);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: setInitialRecoveryPhaseTimeout(), enclave: %lu\n",
+           enclave_id);
+    return CP_ERROR;
+  }
+
   return CP_SUCCESS;
 }
 

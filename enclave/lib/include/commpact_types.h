@@ -27,6 +27,10 @@ typedef struct _cp_ec256_signature_t {
 // Contract Chain Message Type
 
 #define MAX_PLATOON_VEHICLES 8
+#define COMMPACT_JOIN 0x4
+#define COMMPACT_LEAVE 0x2
+#define COMMPACT_SPLIT 0x1
+#define COMMPACT_NORMAL 0x0
 
 typedef struct _contract_chain_t {
   uint32_t contract_id;          // identifier for the contract
@@ -34,6 +38,9 @@ typedef struct _contract_chain_t {
   double sent_time;              // prevents acceptance of delayed packets
   double valid_time;             // chain is valid until this time
   double recovery_phase_timeout; // recovery phase extended to this time
+  uint8_t contract_type; // flag bitmap: join = 0x4, leave = 0x2, split = 0x1,
+                         // normal = 0x0
+  uint8_t chain_length;  // number of vehicles in the chain
   uint8_t chain_order[MAX_PLATOON_VEHICLES]; // array of vehicle positions;
                                              // contract chain should be passed
                                              // in this order
@@ -41,7 +48,6 @@ typedef struct _contract_chain_t {
   float lower_speed;                         // minimum contract speed
   float upper_accel;                         // maximum contract acceleration
   float lower_accel; // maximum negative contract acceleration
-  uint8_t flags;     // flag bitmap: join = 0x4, leave = 0x2, split = 0x1
   float max_decel;   // declared maximum deceleration rate for a joining vehicle
 } contract_chain_t;
 

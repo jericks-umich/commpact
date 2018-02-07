@@ -16,6 +16,9 @@ commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
                                                  double timeout);
 commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
                                     bool *verdict);
+commpact_status_t
+getSignatureForNewContractChainEnclave(contract_chain_t contract,
+                                       cp_ec256_signature_t *signature);
 
 // Private (static) functions
 

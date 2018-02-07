@@ -23,14 +23,22 @@ enclave {
 		//	The length of platoon
 		public sgx_status_t 
 		setPubKeys([in,count = platoon_len_in]sgx_ec256_public_t* pub_keys_in, uint8_t platoon_len_in);
+		
+		//
+		public sgx_status_t setInitialSpeedBounds(double lower, double upper);
 
 
+		//
+		public sgx_status_t setInitialRecoveryPhaseTimeout(double timeout);
+	
 		/****************
 		*DEBUG FUNCTIONS*
 		****************/
 
 		// Get position of the enclave
 		public sgx_status_t getPosition([out] int* pos);
+		
+
 	};
 	untrusted {
 		

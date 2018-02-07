@@ -185,6 +185,20 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
   return CP_SUCCESS;
 }
 
+// When the leader (or, in the event of a leave/split, another vehicle) creates
+// a new contract chain (which may be for a new/updated contract, or not), it
+// will call this function to request the initial signature on the contract.
+// The enclave should ensure that the terms of the new contract are consistent
+// with the terms of the existing contract, and then should create and return
+// (populate the signature parameter) a signature of the contract contents.
+
+commpact_status_t
+getSignatureForNewContractChainEnclave(contract_chain_t contract,
+                                       cp_ec256_signature_t *signature) {
+
+  return CP_SUCCESS;
+}
+
 ///////////////////////
 // Private Functions //
 ///////////////////////

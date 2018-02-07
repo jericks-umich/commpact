@@ -29,6 +29,8 @@ enclave {
 		*DEBUG FUNCTIONS*
 		****************/
 
+		// Get position of the enclave
+		public sgx_status_t getPosition([out] int* pos);
 	};
 	untrusted {
 		

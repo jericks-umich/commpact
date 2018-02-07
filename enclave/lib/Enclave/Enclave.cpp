@@ -121,3 +121,9 @@ sgx_status_t enclave_status() {
   int passfail = *rand % 2;
   return passfail ? SGX_SUCCESS : SGX_ERROR_INVALID_STATE;
 }
+
+// Get position of the enclave
+sgx_status_t getPosition(int *pos) {
+  memcpy(pos, &position, sizeof(int));
+  return SGX_SUCCESS;
+}

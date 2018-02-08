@@ -51,4 +51,6 @@ typedef struct _contract_chain_t {
   float max_decel;   // declared maximum deceleration rate for a joining vehicle
 } contract_chain_t;
 
+#define FLAG_SET_POSITION 0x1
+#define FLAG_SET_PLATOON_LEN 0X2
 #endif // COMMPACT_STATUS_H

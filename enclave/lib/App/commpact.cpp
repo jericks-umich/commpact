@@ -54,8 +54,8 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
   }
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
-
-  status = setPosition(enclave_id, &retval, &position);
+  cp_ec256_public_t sig;
+  status = setPosition(enclave_id, &retval, &position, (sgx_ec256_signature_t*)&sig);
   if (status != SGX_SUCCESS) {
     printf("failed set position: enclave : %lu, position : %d\n", enclave_id,
            position);

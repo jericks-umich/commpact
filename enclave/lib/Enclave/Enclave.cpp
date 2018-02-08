@@ -9,10 +9,13 @@
 
 #include "Enclave.h"
 #include "Enclave_t.h"
+#include "../include/commpact_types.h"
 
 ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
-int position = 0;
 sgx_ec256_public_t *pub_keys = NULL;
+sgx_ec256_public_t *ecu_pub_key = NULL;
+
+int position = 0;
 uint8_t platoon_len = 0;
 
 double lower_speed;
@@ -72,9 +75,43 @@ sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
 }
 
 // This is the function to set vehicle's position
-sgx_status_t setPosition(int *pos) {
-  memcpy(&position, pos, sizeof(int));
-  return SGX_SUCCESS;
+// It returns signature of this flag|data
+sgx_status_t setPosition(int *pos, sgx_ec256_signature_t* sig) {
+	int retval = 0;
+	sgx_ecc_state_handle_t handle;
+	sgx_status_t status = SGX_SUCCESS;
+
+	memcpy(&position, pos, sizeof(int));
+ 	if (key_pair == NULL){
+		char msg[] = "ERROR: public key has not been generated";
+		ocallPrints(&retval, msg);
+		return SGX_ERROR_UNEXPECTED;
+ 	}
+	
+	int msg_len = 2;
+	int* msg_to_sign = (int*)calloc(msg_len, sizeof(int));
+	if(msg_to_sign == NULL){
+		char msg[] = "ERROR: allocate memory for message to be signed failed";
+		ocallPrints(&retval, msg);
+		return SGX_ERROR_OUT_OF_MEMORY;
+	} 
+	
+	// Construct the message as flag|position
+	msg_to_sign[0] = FLAG_SET_POSITION;
+	msg_to_sign[1] = position;
+	
+	// Sign the message
+	status = sgx_ecdsa_sign((uint8_t*)msg_to_sign, 
+				msg_len*sizeof(int),
+				&key_pair->priv,
+				sig,
+				handle);
+	if( status!= SGX_SUCCESS){
+		char msg[] = "ERROR: signing message failed";
+		ocallPrints(&retval, msg);
+		return status;
+	}
+	return SGX_SUCCESS;
 }
 
 // This is the function to set all pubkeys of vehicles in the platoon

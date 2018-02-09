@@ -55,7 +55,8 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
   cp_ec256_public_t sig;
-  status = setPosition(enclave_id, &retval, &position, (sgx_ec256_signature_t*)&sig);
+  status = setPosition(enclave_id, &retval, &position,
+                       (sgx_ec256_signature_t *)&sig);
   if (status != SGX_SUCCESS) {
     printf("failed set position: enclave : %lu, position : %d\n", enclave_id,
            position);
@@ -185,16 +186,15 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
   return CP_SUCCESS;
 }
 
-// When the leader (or, in the event of a leave/split, another vehicle) creates
-// a new contract chain (which may be for a new/updated contract, or not), it
-// will call this function to request the initial signature on the contract.
-// The enclave should ensure that the terms of the new contract are consistent
-// with the terms of the existing contract, and then should create and return
-// (populate the signature parameter) a signature of the contract contents.
-
-commpact_status_t
-getSignatureForNewContractChainEnclave(contract_chain_t contract,
-                                       cp_ec256_signature_t *signature) {
+// This function is called when the vehicle sends a contract (either
+// newly-created or passed from another vehicle) to the enclave.
+// Signatures is an array of length num_signatures of the signatures that have
+// already signed the contract.
+// If the contract is valid and accepted, it should be signed by this enclave
+// and the new signature should be returned by setting return_signature
+commpact_status_t newContractChainGetSignatureEnclave(
+    contract_chain_t contract, cp_ec256_signature_t *return_signature,
+    uint8_t num_signatures, cp_ec256_signature_t *signatures) {
 
   return CP_SUCCESS;
 }

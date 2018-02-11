@@ -15,9 +15,11 @@ ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 sgx_ec256_public_t *pub_keys = NULL;
 sgx_ec256_public_t *ecu_pub_key = NULL;
 
+///////////////////////
+// GLOBAL PARAMETERS //
+///////////////////////
 int position = 0;
 uint8_t platoon_len = 0;
-
 double lower_speed;
 double upper_speed;
 double recovery_phase_timeout;

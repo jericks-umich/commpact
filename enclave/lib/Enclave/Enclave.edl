@@ -2,7 +2,7 @@ enclave {
 	include "sgx_tcrypto.h"
 	include "sgx_error.h"
 	include "stdbool.h"
-	//include "../include/commpact_status.h"
+	include "../include/ecu_types.h"
 
 	trusted {
 
@@ -48,6 +48,9 @@ enclave {
 
 		// This function is used for debugging
 		int ocallPrints([in, string] const char* str);
+
+    // EFFECTS: ocalls ecu.cpp, crafts an ECU message
+    int ocallECUMessage([out] sgx_ec256_signature_t *signature, [out] ecu_message_t *message);
 	};
 };
 

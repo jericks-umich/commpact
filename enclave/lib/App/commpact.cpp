@@ -138,10 +138,14 @@ commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  // error checking bounds for lower and upper
-  /*if () {
+  bool lower_verdict = false;
+  bool upper_verdict = false;
+  checkAllowedSpeed(enclave_id, lower, &lower_verdict);
+  checkAllowedSpeed(enclave_id, upper, &upper_verdict);
+
+  if (!(lower_verdict && upper_verdict)) {
     return CP_INVALID_PARAMETER;
-  }*/
+  }
 
   status = setInitialSpeedBounds(enclave_id, &retval, lower, upper);
   if (status != SGX_SUCCESS) {
@@ -160,7 +164,7 @@ commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  // error checking bounds for timeout
+  // error checking bounds for timeout -- how would i check this?
   /*if () {
     return CP_INVALID_PARAMETER;
   }*/
@@ -181,7 +185,16 @@ commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
 // Return true to approve the speed change, and false to reject it.
 commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
                                     bool *verdict) {
-  // TODO
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status = checkAllowedSpeed(enclave_id, &retval, speed, verdict);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: checkAllowedSpeed(), enclave: %lu\n", enclave_id);
+    *verdict = false;
+    return CP_ERROR;
+  }
+
   *verdict = true;
   return CP_SUCCESS;
 }

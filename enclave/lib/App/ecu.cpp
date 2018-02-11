@@ -1,5 +1,8 @@
 #include "ecu.h"
 
+int position = 0;
+int platoon_len = 0;
+
 commpact_status_t initializeKeysECU(cp_ec256_public_t *pubkey) {
   return CP_SUCCESS;
 }

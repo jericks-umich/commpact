@@ -1,5 +1,4 @@
-#include "sgx_error.h"
-#include "sgx_tcrypto.h"
+#include "../include/commpact_types.h"
 
 #ifndef ENCLAVE_H
 #define ENCLAVE_H

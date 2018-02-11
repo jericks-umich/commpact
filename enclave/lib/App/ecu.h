@@ -1,3 +1,4 @@
+#include "../include/commpact_types.h"
 #ifndef COMMPACT_ECU_H
 #define COMMPACT_ECU_H
 

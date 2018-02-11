@@ -1,18 +1,13 @@
-#ifndef COMMPACT_ECU_H
-#define COMMPACT_ECU_H
+#ifndef ECU_H
+#define ECU_H
 
 #include "sgx_tcrypto.h"
+#include "string.h"
 
 #include "../include/commpact_types.h"
+#include "../include/ecu_types.h"
 
-// setters
-commpact_status_t initializeKeysECU(cp_ec256_public_t *pubkey);
-commpact_status_t setInitialPositionECU(cp_ec256_signature_t *signature,
-                                        int position);
-commpact_status_t setInitialSpeedBoundsECU(cp_ec256_signature_t *signature,
-                                           double lower, double upper);
-commpact_status_t
-setInitialRecoveryPhaseTimeoutECU(cp_ec256_signature_t *signature,
-                                  double timeout);
+commpact_status_t setParametersECU(cp_ec256_signature_t *signature,
+                                   ecu_message_t *message);
 
-#endif // COMMPACT_ECU_H
+#endif /* ECU_H */

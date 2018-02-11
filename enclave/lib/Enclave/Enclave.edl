@@ -30,7 +30,10 @@ enclave {
 		public sgx_status_t setInitialSpeedBounds(double lower, double upper);
 		public sgx_status_t setInitialRecoveryPhaseTimeout(double timeout);
 		public sgx_status_t checkAllowedSpeed(double speed, [out] bool* verdict);
-	
+		
+		// Set ecu's pubkey
+		public sgx_status_t setECUPubKey([in] sgx_ec256_public_t* ecu_pub_key_in);
+
 		/****************
 		*DEBUG FUNCTIONS*
 		****************/
@@ -51,6 +54,9 @@ enclave {
 
     // EFFECTS: ocalls ecu.cpp, crafts an ECU message
     int ocallECUMessage([out] sgx_ec256_signature_t *signature, [out] ecu_message_t *message);
+		
+		// Set enclave's public key in ecu
+		int ocallECUSetEnclavePubKey([out] sgx_ec256_public_t* enclave_pub_key);
 	};
 };
 

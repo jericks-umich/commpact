@@ -73,15 +73,15 @@ sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
   // Copy pub key to the outside
   memcpy(pub, &(key_pair->pub), sizeof(sgx_ec256_public_t));
 
+  ocallECUSetEnclavePubKey(&retval, &(key_pair->pub));
   return SGX_SUCCESS;
 }
 
 // This is the function to set vehicle's position
 // It returns signature of this flag|data
 sgx_status_t setPosition(int *pos, sgx_ec256_signature_t *sig) {
+
   int retval = 0;
-  sgx_ecc_state_handle_t handle;
-  sgx_status_t status = SGX_SUCCESS;
 
   memcpy(&position, pos, sizeof(int));
   if (key_pair == NULL) {
@@ -90,26 +90,6 @@ sgx_status_t setPosition(int *pos, sgx_ec256_signature_t *sig) {
     return SGX_ERROR_UNEXPECTED;
   }
 
-  int msg_len = 2;
-  int *msg_to_sign = (int *)calloc(msg_len, sizeof(int));
-  if (msg_to_sign == NULL) {
-    char msg[] = "ERROR: allocate memory for message to be signed failed";
-    ocallPrints(&retval, msg);
-    return SGX_ERROR_OUT_OF_MEMORY;
-  }
-
-  // Construct the message as flag|position
-  msg_to_sign[0] = FLAG_SET_POSITION;
-  msg_to_sign[1] = position;
-
-  // Sign the message
-  status = sgx_ecdsa_sign((uint8_t *)msg_to_sign, msg_len * sizeof(int),
-                          &key_pair->priv, sig, handle);
-  if (status != SGX_SUCCESS) {
-    char msg[] = "ERROR: signing message failed";
-    ocallPrints(&retval, msg);
-    return status;
-  }
   return SGX_SUCCESS;
 }
 
@@ -168,6 +148,10 @@ sgx_status_t checkAllowedSpeed(double speed, bool *verdict) {
   return SGX_SUCCESS;
 }
 
+sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
+  memcpy(ecu_pub_key, ecu_pub_key_in, sizeof(sgx_ec256_public_t));
+  return SGX_SUCCESS;
+}
 /////////////
 // PRIVATE //
 /////////////

@@ -5,7 +5,6 @@
 ///////////////////////
 ecu_message_t ecu_parameters;
 cp_ec256_public_t enclave_pub_key;
->>>>>>> 171c433c9f72610dea6c90ef936dca172622fe25
 
 commpact_status_t setParameters(cp_ec256_signature_t *signature,
                                 ecu_message_t *message) {

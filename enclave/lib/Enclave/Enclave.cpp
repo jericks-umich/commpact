@@ -110,6 +110,7 @@ sgx_status_t setPosition(int *pos, sgx_ec256_signature_t *sig) {
     ocallPrints(&retval, msg);
     return status;
   }
+  ECUMessage();
   return SGX_SUCCESS;
 }
 
@@ -151,11 +152,13 @@ sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
 sgx_status_t setInitialSpeedBounds(double lower, double upper) {
   lower_speed = lower;
   upper_speed = upper;
+  ECUMessage();
   return SGX_SUCCESS;
 }
 
 sgx_status_t setInitialRecoveryPhaseTimeout(double timeout) {
   recovery_phase_timeout = timeout;
+  ECUMessage();
   return SGX_SUCCESS;
 }
 
@@ -171,6 +174,12 @@ sgx_status_t checkAllowedSpeed(double speed, bool *verdict) {
 /////////////
 // PRIVATE //
 /////////////
+void ECUMessage() {
+  sgx_ec256_signature_t signature;
+  ecu_message_t message;
+  ECUMessage(&signature, &message);
+}
+
 int ECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
   ecu_message_t m = {position, platoon_len, lower_speed, upper_speed,
                      recovery_phase_timeout};

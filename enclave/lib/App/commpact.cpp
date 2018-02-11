@@ -222,3 +222,7 @@ commpact_status_t newContractChainGetSignatureEnclave(
 int ocallPrints(const char *str) {
   printf("The enclave encountered issues: %s\n", str);
 }
+
+int ocallECUMessage(cp_ec256_signature_t *signature, ecu_message_t *message) {
+  printf("ocall: enclave.cpp ocalls ecu.cpp\n");
+}

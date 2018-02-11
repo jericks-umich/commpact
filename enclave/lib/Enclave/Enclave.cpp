@@ -171,6 +171,24 @@ sgx_status_t checkAllowedSpeed(double speed, bool *verdict) {
 /////////////
 // PRIVATE //
 /////////////
+int ECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
+  ecu_message_t m = {position, platoon_len, lower_speed, upper_speed,
+                     recovery_phase_timeout};
+  memcpy(message, &m, sizeof(ecu_message_t));
+
+  int retval = 0;
+  sgx_ecc_state_handle_t handle;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status = sgx_ecdsa_sign((uint8_t *)message, sizeof(ecu_message_t),
+                          &key_pair->priv, signature, handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: Signing failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+  return SGX_SUCCESS;
+}
 
 //////////////////
 // PUBLIC DEBUG //

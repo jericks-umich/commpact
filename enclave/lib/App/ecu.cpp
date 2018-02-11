@@ -6,6 +6,11 @@
 ecu_message_t ecu_parameters;
 cp_ec256_public_t enclave_pub_key;
 
+commpact_status_t setEnclavePubKey(cp_ec256_public_t *pub_key) {
+  memcpy(&enclave_pub_key, pub_key, sizeof(cp_ec256_public_t));
+  return CP_SUCCESS;
+}
+
 commpact_status_t setParameters(cp_ec256_signature_t *signature,
                                 ecu_message_t *message) {
   uint8_t verify_result = 0;

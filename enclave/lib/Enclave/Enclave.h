@@ -16,7 +16,7 @@ typedef struct _ec256_key_pair_t {
 /////////////
 // PRIVATE //
 /////////////
-void ECUMessage();
-int ECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message);
+void sendECUMessage();
+int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message);
 
 #endif // ENCLAVE_H

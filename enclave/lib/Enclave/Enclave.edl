@@ -53,10 +53,10 @@ enclave {
 		int ocallPrints([in, string] const char* str);
 
     // EFFECTS: ocalls ecu.cpp, crafts an ECU message
-    int ocallECUMessage([out] sgx_ec256_signature_t *signature, [out] ecu_message_t *message);
+    int ocallECUMessage([in] sgx_ec256_signature_t *signature, [in] ecu_message_t *message);
 		
 		// Set enclave's public key in ecu
-		int ocallECUSetEnclavePubKey([out] sgx_ec256_public_t* enclave_pub_key);
+		int ocallECUSetEnclavePubKey([in] sgx_ec256_public_t* enclave_pub_key);
 	};
 };
 

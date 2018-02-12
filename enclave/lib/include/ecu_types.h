@@ -6,6 +6,9 @@ typedef struct _ecu_message_t {
   uint8_t platoon_len;
   double lower_speed;
   double upper_speed;
+  double lower_acc;
+  double upper_acc;
+  double max_decel;
   double recovery_phase_timeout;
 } ecu_message_t;
 

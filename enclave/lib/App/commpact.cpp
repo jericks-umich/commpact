@@ -10,8 +10,8 @@
 
 #include "Enclave_u.h"
 #include "commpact.h"
+#include "ecu.h"
 #include "initialsetup.h"
-
 #define INITIAL_SETUP InitialSetup::getInstance()
 #define GET_POSITION InitialSetup::getInstance().getPosition
 
@@ -222,5 +222,9 @@ int ocallPrints(const char *str) {
 }
 
 int ocallECUMessage(cp_ec256_signature_t *signature, ecu_message_t *message) {
-  printf("ocall: enclave.cpp ocalls ecu.cpp\n");
+  setParametersECU(signature, message);
+}
+
+int ocallECUSetEnclavePubKey(cp_ec256_public_t *enclave_pub_key) {
+  setEnclavePubKey(enclave_pub_key);
 }

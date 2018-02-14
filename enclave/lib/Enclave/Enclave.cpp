@@ -11,26 +11,16 @@
 #include "Enclave.h"
 #include "Enclave_t.h"
 
+// GLOBAL VARIABLES
+////////////////////////////////////////////////////////////////////////////////
 ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 sgx_ec256_public_t *pub_keys = NULL;
 sgx_ec256_public_t *ecu_pub_key = NULL;
+contract_chain_t enclave_parameters;
+////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////
-// GLOBAL PARAMETERS //
-///////////////////////
-int position = 0;
-uint8_t platoon_len = 0;
-double lower_speed;
-double upper_speed;
-double lower_acc;
-double upper_acc;
-double max_decel;
-double recovery_phase_timeout;
-
-////////////
-// PUBLIC //
-////////////
-
+// PUBLIC
+////////////////////////////////////////////////////////////////////////////////
 // This is the function to generate a ecc256 key pair.
 // When called, generate a key-pair and return the pub_key
 sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
@@ -86,7 +76,7 @@ sgx_status_t setPosition(int *pos, sgx_ec256_signature_t *sig) {
 
   int retval = 0;
 
-  memcpy(&position, pos, sizeof(int));
+  // memcpy(&position, pos, sizeof(int));
   if (key_pair == NULL) {
     char msg[] = "ERROR: public key has not been generated";
     ocallPrints(&retval, msg);
@@ -125,25 +115,26 @@ sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
   memcpy(pub_keys, pub_keys_in, platoon_len_in * sizeof(sgx_ec256_public_t));
 
   // Set the length of the platoon
-  platoon_len = platoon_len_in;
+  enclave_parameters.chain_length = platoon_len_in;
 
   return SGX_SUCCESS;
 }
 
 sgx_status_t setInitialSpeedBounds(double lower, double upper) {
-  lower_speed = lower;
-  upper_speed = upper;
+  enclave_parameters.lower_speed = lower;
+  enclave_parameters.upper_speed = upper;
   return SGX_SUCCESS;
 }
 
 sgx_status_t setInitialRecoveryPhaseTimeout(double timeout) {
-  recovery_phase_timeout = timeout;
+  enclave_parameters.recovery_phase_timeout = timeout;
   sendECUMessage();
   return SGX_SUCCESS;
 }
 
 sgx_status_t checkAllowedSpeed(double speed, bool *verdict) {
-  if (!(lower_speed <= speed && speed <= upper_speed)) {
+  if (!(enclave_parameters.lower_speed <= speed &&
+        speed <= enclave_parameters.upper_speed)) {
     *verdict = false;
   } else {
     *verdict = true;
@@ -155,9 +146,10 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
   memcpy(ecu_pub_key, ecu_pub_key_in, sizeof(sgx_ec256_public_t));
   return SGX_SUCCESS;
 }
-/////////////
-// PRIVATE //
-/////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// PRIVATE
+////////////////////////////////////////////////////////////////////////////////
 void sendECUMessage() {
   sgx_ec256_signature_t signature;
   ecu_message_t message;
@@ -165,14 +157,14 @@ void sendECUMessage() {
 }
 
 int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
-  message->position = position;
-  message->platoon_len = platoon_len;
-  message->lower_speed = lower_speed;
-  message->upper_speed = upper_speed;
-  message->lower_acc = lower_acc;
-  message->upper_acc = upper_acc;
-  message->max_decel = max_decel;
-  message->recovery_phase_timeout = recovery_phase_timeout;
+  // message->position = enclave_parameters.position;
+  message->recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;
+  message->chain_length = enclave_parameters.chain_length;
+  message->upper_speed = enclave_parameters.upper_speed;
+  message->lower_speed = enclave_parameters.lower_speed;
+  message->upper_accel = enclave_parameters.upper_accel;
+  message->lower_accel = enclave_parameters.lower_accel;
+  message->max_decel = enclave_parameters.max_decel;
 
   int retval = 0;
   sgx_ecc_state_handle_t handle;
@@ -187,11 +179,10 @@ int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
   }
   return SGX_SUCCESS;
 }
+////////////////////////////////////////////////////////////////////////////////
 
-//////////////////
-// PUBLIC DEBUG //
-//////////////////
-
+// PUBLIC DEBUG
+////////////////////////////////////////////////////////////////////////////////
 sgx_status_t enclave_status() {
   int rand[1] = {0};
   sgx_read_rand((unsigned char *)rand, sizeof(unsigned int));
@@ -201,6 +192,7 @@ sgx_status_t enclave_status() {
 
 // Get position of the enclave
 sgx_status_t getPosition(int *pos) {
-  memcpy(pos, &position, sizeof(int));
+  // memcpy(pos, &position, sizeof(int));
   return SGX_SUCCESS;
 }
+////////////////////////////////////////////////////////////////////////////////

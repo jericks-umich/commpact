@@ -16,6 +16,7 @@
 ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 sgx_ec256_public_t *pub_keys = NULL;
 sgx_ec256_public_t *ecu_pub_key = NULL;
+int position;
 contract_chain_t enclave_parameters;
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +77,7 @@ sgx_status_t setPosition(int *pos, sgx_ec256_signature_t *sig) {
 
   int retval = 0;
 
-  // memcpy(&position, pos, sizeof(int));
+  memcpy(&position, pos, sizeof(int));
   if (key_pair == NULL) {
     char msg[] = "ERROR: public key has not been generated";
     ocallPrints(&retval, msg);
@@ -157,7 +158,7 @@ void sendECUMessage() {
 }
 
 int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
-  // message->position = enclave_parameters.position;
+  message->position = position;
   message->recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;
   message->chain_length = enclave_parameters.chain_length;
   message->upper_speed = enclave_parameters.upper_speed;
@@ -192,7 +193,7 @@ sgx_status_t enclave_status() {
 
 // Get position of the enclave
 sgx_status_t getPosition(int *pos) {
-  // memcpy(pos, &position, sizeof(int));
+  memcpy(pos, &position, sizeof(int));
   return SGX_SUCCESS;
 }
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,6 +22,9 @@ int position = 0;
 uint8_t platoon_len = 0;
 double lower_speed;
 double upper_speed;
+double lower_acc;
+double upper_acc;
+double max_decel;
 double recovery_phase_timeout;
 
 ////////////
@@ -162,9 +165,14 @@ void sendECUMessage() {
 }
 
 int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
-  ecu_message_t m = {position, platoon_len, lower_speed, upper_speed,
-                     recovery_phase_timeout};
-  memcpy(message, &m, sizeof(ecu_message_t));
+  message->position = position;
+  message->platoon_len = platoon_len;
+  message->lower_speed = lower_speed;
+  message->upper_speed = upper_speed;
+  message->lower_acc = lower_acc;
+  message->upper_acc = upper_acc;
+  message->max_decel = max_decel;
+  message->recovery_phase_timeout = recovery_phase_timeout;
 
   int retval = 0;
   sgx_ecc_state_handle_t handle;

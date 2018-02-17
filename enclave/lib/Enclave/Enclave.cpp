@@ -153,11 +153,21 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
 ////////////////////////////////////////////////////////////////////////////////
 void sendECUMessage() {
   sgx_ec256_signature_t signature;
+  sgx_ec256_signature_t ecu_signature;
   ecu_message_t message;
   sendECUMessage(&signature, &message);
+
+  int retval = 0;
+  // Make the ocall
+  ocallECUMessage(&retval, &signature, &message, &ecu_signature);
+  uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
+  verifyMessageSignature(&message, &ecu_signature, ecu_pub_key, &verify_result);
+  if (verify_result == SGX_EC_VALID) { // TODO
+  }
 }
 
-int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
+sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
+                            ecu_message_t *message) {
   message->position = position;
   message->recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;
   message->chain_length = enclave_parameters.chain_length;
@@ -171,6 +181,14 @@ int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
   sgx_ecc_state_handle_t handle;
   sgx_status_t status = SGX_SUCCESS;
 
+  // Open ecc256 context
+  status = sgx_ecc256_open_context(&handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: open ecc256 context failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
   status = sgx_ecdsa_sign((uint8_t *)message, sizeof(ecu_message_t),
                           &key_pair->priv, signature, handle);
   if (status != SGX_SUCCESS) {
@@ -178,6 +196,48 @@ int sendECUMessage(sgx_ec256_signature_t *signature, ecu_message_t *message) {
     ocallPrints(&retval, msg);
     return status;
   }
+
+  status = sgx_ecc256_close_context(handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: close ecc256 context failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
+  return SGX_SUCCESS;
+}
+
+sgx_status_t verifyMessageSignature(ecu_message_t *message,
+                                    sgx_ec256_signature_t *signature,
+                                    sgx_ec256_public_t *pub_key,
+                                    uint8_t *result) {
+  int retval = 0;
+  sgx_ecc_state_handle_t handle;
+  sgx_status_t status = SGX_SUCCESS;
+
+  // Open ecc256 context
+  status = sgx_ecc256_open_context(&handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: open ecc256 context failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
+  status = sgx_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t), pub_key,
+                            signature, result, handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: Verifying failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
+  status = sgx_ecc256_close_context(handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: close ecc256 context failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
   return SGX_SUCCESS;
 }
 ////////////////////////////////////////////////////////////////////////////////

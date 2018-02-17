@@ -236,8 +236,10 @@ int ocallPrints(const char *str) {
   printf("The enclave encountered issues: %s\n", str);
 }
 
-int ocallECUMessage(cp_ec256_signature_t *signature, ecu_message_t *message) {
-  setParametersECU(signature, message);
+int ocallECUMessage(cp_ec256_signature_t *enclave_signature,
+                    ecu_message_t *message,
+                    cp_ec256_signature_t *ecu_signature) {
+  setParametersECU(enclave_signature, message, ecu_signature);
 }
 
 int ocallECUSetEnclavePubKey(cp_ec256_public_t *enclave_pub_key) {

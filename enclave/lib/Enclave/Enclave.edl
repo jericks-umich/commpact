@@ -45,7 +45,7 @@ enclave {
 	};
 	untrusted {
 		 // EFFECTS: ocalls ecu.cpp, crafts an ECU message
-    int ocallECUMessage([in] sgx_ec256_signature_t *enclave_signature, [out] sgx_ec256_signature_t *ecu_signature, [in] ecu_message_t *message);
+    int ocallECUMessage([in] sgx_ec256_signature_t *enclave_signature,  [in] ecu_message_t *message,[out] sgx_ec256_signature_t *ecu_signature);
 		
 		// EFFECTS: sets enclave's public key in ecu
 		int ocallECUSetEnclavePubKey([in] sgx_ec256_public_t* enclave_pub_key);

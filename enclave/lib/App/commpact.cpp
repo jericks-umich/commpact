@@ -191,11 +191,9 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
   status = checkAllowedSpeed(enclave_id, &retval, speed, verdict);
   if (status != SGX_SUCCESS) {
     printf("ERROR: checkAllowedSpeed(), enclave: %lu\n", enclave_id);
-    *verdict = false;
     return CP_ERROR;
   }
 
-  *verdict = true;
   return CP_SUCCESS;
 }
 

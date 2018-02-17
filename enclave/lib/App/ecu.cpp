@@ -11,8 +11,8 @@ commpact_status_t setEnclavePubKey(cp_ec256_public_t *pub_key) {
   return CP_SUCCESS;
 }
 
-commpact_status_t setParameters(cp_ec256_signature_t *signature,
-                                ecu_message_t *message) {
+commpact_status_t setParametersECU(cp_ec256_signature_t *signature,
+                                   ecu_message_t *message) {
   uint8_t verify_result = 0;
   sgx_ecc_state_handle_t handle;
   sgx_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t),

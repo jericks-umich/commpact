@@ -44,7 +44,12 @@ enclave {
 
 	};
 	untrusted {
+		 // EFFECTS: ocalls ecu.cpp, crafts an ECU message
+    int ocallECUMessage([in] sgx_ec256_signature_t *enclave_signature, [out] sgx_ec256_signature_t *ecu_signature, [in] ecu_message_t *message);
 		
+		// EFFECTS: sets enclave's public key in ecu
+		int ocallECUSetEnclavePubKey([in] sgx_ec256_public_t* enclave_pub_key);
+
 		/****************
 		*DEBUG FUNCTIONS*
 		****************/
@@ -52,12 +57,7 @@ enclave {
 		// This function is used for debugging
 		int ocallPrints([in, string] const char* str);
 
-    // EFFECTS: ocalls ecu.cpp, crafts an ECU message
-    int ocallECUMessage([in] sgx_ec256_signature_t *enclave_signature, [out] sgx_ec256_signature_t *ecu_signature, [in] ecu_message_t *message);
-		
-		// EFFECTS: sets enclave's public key in ecu
-		int ocallECUSetEnclavePubKey([in] sgx_ec256_public_t* enclave_pub_key);
-	};
+   	};
 };
 
 
@@ -74,10 +74,8 @@ enclave {
 	//	// public sgx_status_t flush_ec256_key_pair_cache();
 	//	public sgx_status_t delete_all_ec256_key_pairs();
 
-	//	// input:
-	//	//	plaintext	        pointer to buffer of plaintext bytes
-	//	//	plaintext_len       length of plaintext buffer
-	//	//	server_pubkey       pointer to the server's public key (for looking up its corresponding private key)
+	//	// input: //	plaintext	        pointer to buffer of plaintext bytes
+	//	//	plaintext_len       length of plaintext buffer //	server_pubkey       pointer to the server's public key (for looking up its corresponding private key)
 	//	//	client_pubkey       pointer to the client's public key
 	//	//	server_random       28 random bytes from the server
 	//	//	server_random_len   should be 28

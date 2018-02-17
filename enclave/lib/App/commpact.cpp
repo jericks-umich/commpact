@@ -90,6 +90,7 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
+  // Generate a key pair in enclave, the key will also be passed to ecu
   status =
       initialEc256KeyPair(enclave_id, &retval, (sgx_ec256_public_t *)pubkey);
 
@@ -97,6 +98,20 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
     printf("Failed initialize keys\n");
     return CP_ERROR;
   }
+  // Generate a key pair in ecu and pass the key to enclave
+  cp_ec256_public_t ecu_pub_key;
+  status = (sgx_status_t)generateKeyPair(&ecu_pub_key);
+  if (status != SGX_SUCCESS) {
+    printf("Ecu failed generate keys\n");
+    return CP_ERROR;
+  }
+  status =
+      setECUPubKey(enclave_id, &retval, (sgx_ec256_public_t *)&ecu_pub_key);
+  if (status != SGX_SUCCESS) {
+    printf("Failed pass ecu's pub key into enclave\n");
+    return CP_ERROR;
+  }
+
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
   int position = GET_POSITION(enclave_id);

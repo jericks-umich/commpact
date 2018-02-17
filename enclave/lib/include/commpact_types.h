@@ -24,6 +24,9 @@ typedef struct _cp_ec256_signature_t {
   uint32_t y[CP_NISTP_ECP256_KEY_SIZE];
 } cp_ec256_signature_t;
 
+typedef struct _cp_ec256_private_t {
+  uint8_t r[SGX_ECP256_KEY_SIZE];
+} cp_ec256_private_t;
 // Contract Chain Message Type
 
 #define MAX_PLATOON_VEHICLES 8

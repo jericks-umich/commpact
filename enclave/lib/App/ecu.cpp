@@ -28,7 +28,7 @@ commpact_status_t generateKeyPair(cp_ec256_public_t *pub_key) {
   commpact_status_t status = CP_SUCCESS;
   sgx_ecc_state_handle_t ecc_handle;
 
-  status = (commpact_status_t)sgx_ec256_open_context(&ecc_handle);
+  status = (commpact_status_t)sgx_ecc256_open_context(&ecc_handle);
   if (status != CP_SUCCESS) {
     printf("ERROR: ecu open ec256 context failed");
     return status;

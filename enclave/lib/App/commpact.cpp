@@ -226,16 +226,16 @@ commpact_status_t newContractChainGetSignatureEnclave(
   return CP_SUCCESS;
 }
 
-///////////////////////
-// Private Functions //
-///////////////////////
-void validateSignatures(contract_chain_t *contract,
+// Private Functions
+////////////////////////////////////////////////////////////////////////////////
+void validateSignatures(uint64_t enclave_id, contract_chain_t *contract,
                         cp_ec256_signature_t *signatures,
                         uint8_t num_signatures) {}
 
-void checkParameters() {}
+void checkParameters(uint64_t enclave_id) {}
 
-void updateParameters() {}
+void updateParameters(uint64_t enclave_id) {}
+////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////
 // Ocalls in Enclave///

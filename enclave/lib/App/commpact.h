@@ -24,11 +24,11 @@ commpact_status_t newContractChainGetSignatureEnclave(
 
 // private (static) functions
 ////////////////////////////////////////////////////////////////////////////////
-void validateSignatures(contract_chain_t *contract,
+void validateSignatures(uint64_t enclave_id, contract_chain_t *contract,
                         cp_ec256_signature_t *signatures,
                         uint8_t num_signatures);
-void checkParameters();
-void updateParameters();
+void checkParameters(uint64_t enclave_id);
+void updateParameters(uint64_t enclave_id);
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif /* COMMPACT__H */

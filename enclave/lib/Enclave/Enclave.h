@@ -18,7 +18,7 @@ typedef struct _ec256_key_pair_t {
 sgx_status_t sendECUMessage();
 sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
                             ecu_message_t *message);
-sgx_status_t verifyMessageSignature(ecu_message_t *message,
+sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
                                     sgx_ec256_signature_t *signature,
                                     sgx_ec256_public_t *pub_key,
                                     uint8_t *result);

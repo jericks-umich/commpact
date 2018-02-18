@@ -149,7 +149,7 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
 
 sgx_status_t validateSignatures(contract_chain_t *contract,
                                 sgx_ec256_signature_t *signatures,
-                                uint8_t num_signatures) {
+                                uint8_t *num_signatures) {
   return SGX_SUCCESS;
 }
 
@@ -216,14 +216,15 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
   // Make the ocall
   ocallECUMessage(&retval, signature, message, &ecu_signature);
   uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
-  verifyMessageSignature(message, &ecu_signature, ecu_pub_key, &verify_result);
+  verifyMessageSignature((uint8_t *)message, sizeof(ecu_message_t),
+                         &ecu_signature, ecu_pub_key, &verify_result);
   if (verify_result == SGX_EC_VALID) { // TODO
   }
 
   return SGX_SUCCESS;
 }
 
-sgx_status_t verifyMessageSignature(ecu_message_t *message,
+sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
                                     sgx_ec256_signature_t *signature,
                                     sgx_ec256_public_t *pub_key,
                                     uint8_t *result) {
@@ -239,7 +240,7 @@ sgx_status_t verifyMessageSignature(ecu_message_t *message,
     return status;
   }
 
-  status = sgx_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t), pub_key,
+  status = sgx_ecdsa_verify((uint8_t *)message, message_size, pub_key,
                             signature, result, handle);
   if (status != SGX_SUCCESS) {
     char msg[] = "ERROR: Verifying failed";
@@ -257,12 +258,6 @@ sgx_status_t verifyMessageSignature(ecu_message_t *message,
   return SGX_SUCCESS;
 }
 
-sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
-                                      sgx_ec256_signature_t *signatures,
-                                      uint8_t num_signatures) {
-  return SGX_SUCCESS;
-}
-
 sgx_status_t checkParametersHelper(contract_chain_t *contract) {
   return SGX_SUCCESS;
 }
@@ -274,6 +269,14 @@ sgx_status_t updateParametersHelper(contract_chain_t *contract) {
 sgx_status_t signContractHelper(contract_chain_t *contract,
                                 sgx_ec256_signature_t *return_signature) {
   return SGX_SUCCESS;
+}
+sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
+                                      sgx_ec256_signature_t *signatures,
+                                      uint8_t num_signatures, uint8_t *result) {
+  for (uint8_t i = 0; i < num_signatures; ++i) {
+    verifyMessageSignature((uint8_t *)contract, sizeof(contract_chain_t),
+                           signatures + i, pub_keys, result);
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 

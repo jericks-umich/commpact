@@ -146,11 +146,36 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
   memcpy(ecu_pub_key, ecu_pub_key_in, sizeof(sgx_ec256_public_t));
   return SGX_SUCCESS;
 }
+sgx_status_t newContractChainGetSignatureEnclave(
+    contract_chain_t *contract, sgx_ec256_signature_t *return_signature,
+    sgx_ec256_signature_t *signatures, uint8_t num_signatures) {
+  uint8_t verify_result = 0;
+  sgx_status_t status = SGX_SUCCESS;
+  memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
+  status = validateSignaturesHelper(contract, signatures, num_signatures);
+  if (status != SGX_SUCCESS) {
+    return status;
+  }
+  status = checkParametersHelper(contract);
+  if (status != SGX_SUCCESS) {
+    return status;
+  }
+  status = updateParametersHelper(contract);
+  if (status != SGX_SUCCESS) {
+    return status;
+  }
+  status = signContractHelper(contract, return_signature);
+  if (status != SGX_SUCCESS) {
+    memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
+    return status;
+  }
+  return SGX_SUCCESS;
+}
 
 sgx_status_t validateSignatures(contract_chain_t *contract,
                                 sgx_ec256_signature_t *signatures,
-                                uint8_t *num_signatures) {
-  return validateSignatures(contract, signatures, num_signatures);
+                                uint8_t num_signatures) {
+  return validateSignaturesHelper(contract, signatures, num_signatures);
 }
 
 sgx_status_t checkParameters(contract_chain_t *contract) {
@@ -341,16 +366,17 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
 }
 sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
                                       sgx_ec256_signature_t *signatures,
-                                      uint8_t num_signatures, uint8_t *result) {
+                                      uint8_t num_signatures) {
+  uint8_t result = 0;
   for (uint8_t i = 0; i < num_signatures; ++i) {
     verifyMessageSignature((uint8_t *)contract, sizeof(contract_chain_t),
                            signatures + i, pub_keys + contract->chain_order[i],
-                           result);
-    if (*result != SGX_EC_VALID) {
+                           &result);
+    if (result != SGX_EC_VALID) {
       int retval = 0;
       char msg[] = "Invalid signature";
       ocallPrints(&retval, msg);
-      return SGX_SUCCESS;
+      return SGX_ERROR_UNEXPECTED;
     }
   }
   return SGX_SUCCESS;

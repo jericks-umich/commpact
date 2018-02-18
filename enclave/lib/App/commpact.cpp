@@ -215,9 +215,19 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 // and the new signature should be returned by setting return_signature
 
 commpact_status_t newContractChainGetSignatureEnclave(
-    contract_chain_t contract, cp_ec256_signature_t *return_signature,
-    uint8_t num_signatures, cp_ec256_signature_t *signatures) {
+    uint64_t enclave_id, contract_chain_t contract,
+    cp_ec256_signature_t *return_signature, uint8_t num_signatures,
+    cp_ec256_signature_t *signatures) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
 
+  status = newContractChainGetSignatureEnclave(
+      enclave_id, &retval, &contract, (sgx_ec256_signature_t *)return_signature,
+      (sgx_ec256_signature_t *)signatures, num_signatures);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: newContractChainGetSignature failed");
+    return CP_ERROR;
+  }
   return CP_SUCCESS;
 }
 
@@ -226,7 +236,20 @@ commpact_status_t newContractChainGetSignatureEnclave(
 commpact_status_t validateSignaturesHelper(uint64_t enclave_id,
                                            contract_chain_t *contract,
                                            cp_ec256_signature_t *signatures,
-                                           uint8_t num_signatures) {}
+                                           uint8_t num_signatures) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status =
+      validateSignatures(enclave_id, &retval, contract,
+                         (sgx_ec256_signature_t *)signatures, num_signatures);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: validateSignaturesHelper(), enclave: %lu\n", enclave_id);
+    return CP_ERROR;
+  }
+
+  return CP_SUCCESS;
+}
 
 commpact_status_t checkParametersHelper(uint64_t enclave_id,
                                         contract_chain_t *contract) {
@@ -258,7 +281,19 @@ commpact_status_t updateParametersHelper(uint64_t enclave_id,
 
 commpact_status_t signContractHelper(uint64_t enclave_id,
                                      contract_chain_t *contract,
-                                     cp_ec256_signature_t *return_signature) {}
+                                     cp_ec256_signature_t *return_signature) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status = signContract(enclave_id, &retval, contract,
+                        (sgx_ec256_signature_t *)return_signature);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: signContractHelper(), enclave: %lu\n", enclave_id);
+    return CP_ERROR;
+  }
+
+  return CP_SUCCESS;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 // ocalls in enclave

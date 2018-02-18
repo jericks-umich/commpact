@@ -23,7 +23,7 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
                                     sgx_ec256_public_t *pub_key,
                                     uint8_t *result);
 sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
-                                      cp_ec256_signature_t *signatures,
+                                      sgx_ec256_signature_t *signatures,
                                       uint8_t num_signatures);
 sgx_status_t checkParametersHelper(contract_chain_t *contract);
 sgx_status_t updateParametersHelper(contract_chain_t *contract);

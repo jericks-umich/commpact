@@ -261,7 +261,42 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
 }
 
 sgx_status_t checkParametersHelper(contract_chain_t *contract) {
-  return SGX_SUCCESS;
+  // deceleration
+  if (contract->lower_speed < enclave_parameters.lower_speed &&
+      contract->upper_speed < enclave_parameters.upper_speed) {
+    for (int i = 0; i < contract->chain_length + 1; ++i) {
+      if ((i == 0 || i == contract->chain_length) &&
+          contract->chain_order[i] != 0) {
+        return SGX_ERROR_UNEXPECTED;
+      } else {
+        if (contract->chain_order[i] != contract->chain_length - i) {
+          return SGX_ERROR_UNEXPECTED;
+        }
+      }
+      return SGX_SUCCESS;
+    }
+  }
+
+  // acceleration
+  else if (contract->lower_speed > enclave_parameters.lower_speed &&
+           contract->upper_speed > enclave_parameters.upper_speed) {
+    for (int i = 0; i < contract->chain_length + 1; ++i) {
+      if ((i == 0 || i == contract->chain_length) &&
+          contract->chain_order[i] != 0) {
+        return SGX_ERROR_UNEXPECTED;
+      } else {
+        if (contract->chain_order[i] != i) {
+          return SGX_ERROR_UNEXPECTED;
+        }
+      }
+      return SGX_SUCCESS;
+    }
+  }
+
+  // unaccounted for scenarios
+  else {
+    return SGX_ERROR_UNEXPECTED;
+  }
 }
 
 sgx_status_t updateParametersHelper(contract_chain_t *contract) {

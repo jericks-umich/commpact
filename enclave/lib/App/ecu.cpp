@@ -7,6 +7,7 @@ ecu_message_t ecu_parameters;
 cp_ec256_public_t enclave_pub_key;
 cp_ec256_private_t ecu_priv_key;
 cp_ec256_public_t ecu_pub_key;
+
 commpact_status_t setEnclavePubKey(cp_ec256_public_t *pub_key) {
   memcpy(&enclave_pub_key, pub_key, sizeof(cp_ec256_public_t));
   return CP_SUCCESS;

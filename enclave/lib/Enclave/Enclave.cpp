@@ -7,7 +7,6 @@
 #include "sgx_trts.h"
 #include "sgx_tseal.h"
 
-#include "../include/commpact_types.h"
 #include "Enclave.h"
 #include "Enclave_t.h"
 
@@ -147,6 +146,23 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
   memcpy(ecu_pub_key, ecu_pub_key_in, sizeof(sgx_ec256_public_t));
   return SGX_SUCCESS;
 }
+
+sgx_status_t validateSignatures(contract_chain_t *contract,
+                                sgx_ec256_signature_t *signatures,
+                                uint8_t num_signatures) {
+  return SGX_SUCCESS;
+}
+
+sgx_status_t checkParameters(contract_chain_t *contract) { return SGX_SUCCESS; }
+
+sgx_status_t updateParameters(contract_chain_t *contract) {
+  return SGX_SUCCESS;
+}
+
+sgx_status_t signContract(contract_chain_t *contract,
+                          sgx_ec256_signature_t *return_signature) {
+  return SGX_SUCCESS;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 // PRIVATE
@@ -238,6 +254,25 @@ sgx_status_t verifyMessageSignature(ecu_message_t *message,
     return status;
   }
 
+  return SGX_SUCCESS;
+}
+
+sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
+                                      sgx_ec256_signature_t *signatures,
+                                      uint8_t num_signatures) {
+  return SGX_SUCCESS;
+}
+
+sgx_status_t checkParametersHelper(contract_chain_t *contract) {
+  return SGX_SUCCESS;
+}
+
+sgx_status_t updateParametersHelper(contract_chain_t *contract) {
+  return SGX_SUCCESS;
+}
+
+sgx_status_t signContractHelper(contract_chain_t *contract,
+                                sgx_ec256_signature_t *return_signature) {
   return SGX_SUCCESS;
 }
 ////////////////////////////////////////////////////////////////////////////////

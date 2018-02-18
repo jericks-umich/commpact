@@ -275,8 +275,16 @@ sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
                                       uint8_t num_signatures, uint8_t *result) {
   for (uint8_t i = 0; i < num_signatures; ++i) {
     verifyMessageSignature((uint8_t *)contract, sizeof(contract_chain_t),
-                           signatures + i, pub_keys, result);
+                           signatures + i, pub_keys + contract->chain_order[i],
+                           result);
+    if (*result != SGX_EC_VALID) {
+      int retval = 0;
+      char msg[] = "Invalid signature";
+      ocallPrints(&retval, msg);
+      return SGX_SUCCESS;
+    }
   }
+  return SGX_SUCCESS;
 }
 ////////////////////////////////////////////////////////////////////////////////
 

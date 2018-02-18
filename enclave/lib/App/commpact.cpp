@@ -179,11 +179,6 @@ commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  // error checking bounds for timeout -- how would i check this?
-  /*if () {
-    return CP_INVALID_PARAMETER;
-  }*/
-
   status = setInitialRecoveryPhaseTimeout(enclave_id, &retval, timeout);
   if (status != SGX_SUCCESS) {
     printf("ERROR: setInitialRecoveryPhaseTimeout(), enclave: %lu\n",
@@ -234,10 +229,32 @@ commpact_status_t validateSignaturesHelper(uint64_t enclave_id,
                                            uint8_t num_signatures) {}
 
 commpact_status_t checkParametersHelper(uint64_t enclave_id,
-                                        contract_chain_t *contract) {}
+                                        contract_chain_t *contract) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status = checkParameters(enclave_id, &retval, contract);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: checkParametersHelper(), enclave: %lu\n", enclave_id);
+    return CP_ERROR;
+  }
+
+  return CP_SUCCESS;
+}
 
 commpact_status_t updateParametersHelper(uint64_t enclave_id,
-                                         contract_chain_t *contract) {}
+                                         contract_chain_t *contract) {
+  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
+
+  status = updateParameters(enclave_id, &retval, contract);
+  if (status != SGX_SUCCESS) {
+    printf("ERROR: updateParametersHelper(), enclave: %lu\n", enclave_id);
+    return CP_ERROR;
+  }
+
+  return CP_SUCCESS;
+}
 
 commpact_status_t signContractHelper(uint64_t enclave_id,
                                      contract_chain_t *contract,

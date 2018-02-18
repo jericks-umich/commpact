@@ -33,7 +33,11 @@ enclave {
 		
 		// Set ecu's pubkey
 		public sgx_status_t setECUPubKey([in] sgx_ec256_public_t* ecu_pub_key_in);
-
+		
+		public sgx_status_t validateSignatures([in]contract_chain_t *contract,[in]cp_ec256_signature_t *signatures,[in] uniti8_t num_signatures);
+		public sgx_status_t checkParameters([in] contract_chain_t *contract);
+		public sgx_status_t updateParameters([in] contract_chain_t *contract);
+		public sgx_status_t signContract([in]contract_chain_t *contract, [out] sgx_ec256_signature_t* signature);
 		/****************
 		*DEBUG FUNCTIONS*
 		****************/

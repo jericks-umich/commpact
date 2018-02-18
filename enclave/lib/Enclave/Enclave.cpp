@@ -151,11 +151,10 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
 
 // PRIVATE
 ////////////////////////////////////////////////////////////////////////////////
-void sendECUMessage() {
+sgx_status_t sendECUMessage() {
   sgx_ec256_signature_t signature;
-  sgx_ec256_signature_t ecu_signature;
   ecu_message_t message;
-  sendECUMessage(&signature, &message);
+  return sendECUMessage(&signature, &message);
 }
 
 sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
@@ -196,11 +195,12 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
     return status;
   }
 
-  int retval = 0;
+  retval = 0;
+  sgx_ec256_signature_t ecu_signature;
   // Make the ocall
-  ocallECUMessage(&retval, &signature, &message, &ecu_signature);
+  ocallECUMessage(&retval, signature, message, &ecu_signature);
   uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
-  verifyMessageSignature(&message, &ecu_signature, ecu_pub_key, &verify_result);
+  verifyMessageSignature(message, &ecu_signature, ecu_pub_key, &verify_result);
   if (verify_result == SGX_EC_VALID) { // TODO
   }
 

@@ -218,6 +218,7 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 // already signed the contract.
 // If the contract is valid and accepted, it should be signed by this enclave
 // and the new signature should be returned by setting return_signature
+
 commpact_status_t newContractChainGetSignatureEnclave(
     contract_chain_t contract, cp_ec256_signature_t *return_signature,
     uint8_t num_signatures, cp_ec256_signature_t *signatures) {
@@ -228,6 +229,13 @@ commpact_status_t newContractChainGetSignatureEnclave(
 ///////////////////////
 // Private Functions //
 ///////////////////////
+void validateSignatures(contract_chain_t *contract,
+                        cp_ec256_signature_t *signatures,
+                        uint8_t num_signatures) {}
+
+void checkParameters() {}
+
+void updateParameters() {}
 
 //////////////////////
 // Ocalls in Enclave///

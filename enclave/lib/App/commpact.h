@@ -1,11 +1,12 @@
-#ifndef COMMPACT_APP_H
-#define COMMPACT_APP_H
+#ifndef COMMPACT_H
+#define COMMPACT_H
 
 #define ENCLAVE_FILENAME "/tmp/enclave.signed.so"
 
 #include "../include/commpact_types.h"
 
-// API Exposed Functions
+// public (API exposed) functions
+////////////////////////////////////////////////////////////////////////////////
 commpact_status_t initEnclave(uint64_t *enclave_id);
 commpact_status_t setInitialPosition(uint64_t enclave_id, int position);
 commpact_status_t initializeKeys(uint64_t enclave_id,
@@ -19,7 +20,15 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 commpact_status_t newContractChainGetSignatureEnclave(
     contract_chain_t contract, cp_ec256_signature_t *return_signature,
     uint8_t num_signatures, cp_ec256_signature_t *signatures);
+////////////////////////////////////////////////////////////////////////////////
 
-// Private (static) functions
+// private (static) functions
+////////////////////////////////////////////////////////////////////////////////
+void validateSignatures(contract_chain_t *contract,
+                        cp_ec256_signature_t *signatures,
+                        uint8_t num_signatures);
+void checkParameters();
+void updateParameters();
+////////////////////////////////////////////////////////////////////////////////
 
-#endif // COMMPACT_APP_H
+#endif /* COMMPACT__H */

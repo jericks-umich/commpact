@@ -150,7 +150,7 @@ sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
 sgx_status_t validateSignatures(contract_chain_t *contract,
                                 sgx_ec256_signature_t *signatures,
                                 uint8_t *num_signatures) {
-  return SGX_SUCCESS;
+  return validateSignatures(contract, signatures, num_signatures);
 }
 
 sgx_status_t checkParameters(contract_chain_t *contract) {
@@ -163,7 +163,7 @@ sgx_status_t updateParameters(contract_chain_t *contract) {
 
 sgx_status_t signContract(contract_chain_t *contract,
                           sgx_ec256_signature_t *return_signature) {
-  return SGX_SUCCESS;
+  return signContractHelper(contract, return_signature);
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -309,6 +309,34 @@ sgx_status_t updateParametersHelper(contract_chain_t *contract) {
 
 sgx_status_t signContractHelper(contract_chain_t *contract,
                                 sgx_ec256_signature_t *return_signature) {
+
+  int retval = 0;
+  sgx_ecc_state_handle_t handle;
+  sgx_status_t status = SGX_SUCCESS;
+
+  // Open ecc256 context
+  status = sgx_ecc256_open_context(&handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: open ecc256 context failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
+  status = sgx_ecdsa_sign((uint8_t *)contract, sizeof(contract_chain_t),
+                          &key_pair->priv, return_signature, handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: Signing failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
+  status = sgx_ecc256_close_context(handle);
+  if (status != SGX_SUCCESS) {
+    char msg[] = "ERROR: close ecc256 context failed";
+    ocallPrints(&retval, msg);
+    return status;
+  }
+
   return SGX_SUCCESS;
 }
 sgx_status_t validateSignaturesHelper(contract_chain_t *contract,

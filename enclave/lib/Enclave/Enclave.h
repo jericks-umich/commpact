@@ -28,7 +28,7 @@ sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
 sgx_status_t checkParametersHelper(contract_chain_t *contract);
 sgx_status_t updateParametersHelper(contract_chain_t *contract);
 sgx_status_t signContractHelper(contract_chain_t *contract,
-                                cp_ec256_signature_t *return_signature);
+                                sgx_ec256_signature_t *return_signature);
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif /* ENCLAVE_H */

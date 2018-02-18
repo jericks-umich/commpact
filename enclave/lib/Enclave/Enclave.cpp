@@ -153,10 +153,12 @@ sgx_status_t validateSignatures(contract_chain_t *contract,
   return SGX_SUCCESS;
 }
 
-sgx_status_t checkParameters(contract_chain_t *contract) { return SGX_SUCCESS; }
+sgx_status_t checkParameters(contract_chain_t *contract) {
+  return checkParametersHelper(contract);
+}
 
 sgx_status_t updateParameters(contract_chain_t *contract) {
-  return SGX_SUCCESS;
+  return updateParametersHelper(contract);
 }
 
 sgx_status_t signContract(contract_chain_t *contract,
@@ -263,7 +265,11 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract) {
 }
 
 sgx_status_t updateParametersHelper(contract_chain_t *contract) {
-  return SGX_SUCCESS;
+  enclave_parameters = *contract;
+  for (int i = 0; i < enclave_parameters.chain_length; ++i) {
+    enclave_parameters.chain_order[i] = contract->chain_order[i];
+  }
+  return sendECUMessage();
 }
 
 sgx_status_t signContractHelper(contract_chain_t *contract,

@@ -156,14 +156,6 @@ void sendECUMessage() {
   sgx_ec256_signature_t ecu_signature;
   ecu_message_t message;
   sendECUMessage(&signature, &message);
-
-  int retval = 0;
-  // Make the ocall
-  ocallECUMessage(&retval, &signature, &message, &ecu_signature);
-  uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
-  verifyMessageSignature(&message, &ecu_signature, ecu_pub_key, &verify_result);
-  if (verify_result == SGX_EC_VALID) { // TODO
-  }
 }
 
 sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
@@ -202,6 +194,14 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
     char msg[] = "ERROR: close ecc256 context failed";
     ocallPrints(&retval, msg);
     return status;
+  }
+
+  int retval = 0;
+  // Make the ocall
+  ocallECUMessage(&retval, &signature, &message, &ecu_signature);
+  uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
+  verifyMessageSignature(&message, &ecu_signature, ecu_pub_key, &verify_result);
+  if (verify_result == SGX_EC_VALID) { // TODO
   }
 
   return SGX_SUCCESS;

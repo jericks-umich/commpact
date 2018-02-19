@@ -186,14 +186,14 @@ sgx_status_t sendECUMessage() {
   sgx_ec256_signature_t signature;
   ecu_message_t message;
 
-  message->position = position;
-  message->num_vehicles = num_vehicles;
-  message->recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;
-  message->upper_speed = enclave_parameters.upper_speed;
-  message->lower_speed = enclave_parameters.lower_speed;
-  message->upper_accel = enclave_parameters.upper_accel;
-  message->lower_accel = enclave_parameters.lower_accel;
-  message->max_decel = enclave_parameters.max_decel;
+  message.position = position;
+  message.num_vehicles = num_vehicles;
+  message.recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;
+  message.upper_speed = enclave_parameters.upper_speed;
+  message.lower_speed = enclave_parameters.lower_speed;
+  message.upper_accel = enclave_parameters.upper_accel;
+  message.lower_accel = enclave_parameters.lower_accel;
+  message.max_decel = enclave_parameters.max_decel;
 
   return sendECUMessage(&signature, &message);
 }
@@ -255,7 +255,7 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
   int retval = 0;
   sgx_ecc_state_handle_t handle;
   sgx_status_t status = SGX_SUCCESS;
-  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t ret = SGX_SUCCESS;
 
   // Open ecc256 context
   status = sgx_ecc256_open_context(&handle);
@@ -270,7 +270,7 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
   if (status != SGX_SUCCESS) {
     char msg[] = "ERROR: Verifying failed";
     ocallPrints(&retval, msg);
-    retval = status;
+    ret = status;
   }
 
   status = sgx_ecc256_close_context(handle);
@@ -280,7 +280,25 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
     return status;
   }
 
-  return retval;
+  return ret;
+}
+
+sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
+                                      sgx_ec256_signature_t *signatures,
+                                      uint8_t num_signatures) {
+  uint8_t result = SGX_EC_INVALID_SIGNATURE;
+  for (uint8_t i = 0; i < num_signatures; ++i) {
+    verifyMessageSignature((uint8_t *)contract, sizeof(contract_chain_t),
+                           signatures + i, pub_keys + contract->chain_order[i],
+                           &result);
+    if (result != SGX_EC_VALID) {
+      int retval = 0;
+      char msg[] = "Invalid signature";
+      ocallPrints(&retval, msg);
+      return SGX_ERROR_UNEXPECTED;
+    }
+  }
+  return SGX_SUCCESS;
 }
 
 sgx_status_t checkParametersHelper(contract_chain_t *contract,
@@ -351,7 +369,7 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
   int retval = 0;
   sgx_ecc_state_handle_t handle;
   sgx_status_t status = SGX_SUCCESS;
-  sgx_status_t retval = SGX_SUCCESS;
+  sgx_status_t ret = SGX_SUCCESS;
 
   // Open ecc256 context
   status = sgx_ecc256_open_context(&handle);
@@ -366,7 +384,7 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
   if (status != SGX_SUCCESS) {
     char msg[] = "ERROR: Signing failed";
     ocallPrints(&retval, msg);
-    retval = status;
+    ret = status;
   }
 
   status = sgx_ecc256_close_context(handle);
@@ -376,7 +394,7 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
     return status;
   }
 
-  return retval;
+  return ret;
 }
 ////////////////////////////////////////////////////////////////////////////////
 // PUBLIC DEBUG

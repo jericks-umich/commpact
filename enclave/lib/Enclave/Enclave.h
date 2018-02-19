@@ -5,6 +5,8 @@
 
 #include "../include/ecu_types.h"
 
+#define COMMPACT_DEBUG
+
 // private function definitions go here (but not public ones, since those are
 // already exposed via edger8r
 
@@ -25,7 +27,8 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
 sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
                                       sgx_ec256_signature_t *signatures,
                                       uint8_t num_signatures);
-sgx_status_t checkParametersHelper(contract_chain_t *contract);
+sgx_status_t checkParametersHelper(contract_chain_t *contract,
+                                   uint8_t *should_update_ecu);
 sgx_status_t updateParametersHelper(contract_chain_t *contract);
 sgx_status_t signContractHelper(contract_chain_t *contract,
                                 sgx_ec256_signature_t *return_signature);

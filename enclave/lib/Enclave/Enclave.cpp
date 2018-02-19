@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 sgx_ec256_public_t *pub_keys = NULL;
+uint8_t num_vehicles = 0;
 sgx_ec256_public_t *ecu_pub_key = NULL;
 int position;
 contract_chain_t enclave_parameters;
@@ -105,6 +106,7 @@ sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
   // Allocate new memory
   pub_keys =
       (sgx_ec256_public_t *)calloc(platoon_len_in, sizeof(sgx_ec256_public_t));
+  num_vehicles = platoon_len_in;
   if (pub_keys == NULL) {
     char msg[] = "ERROR: allocate memory for public keys failed";
     ocallPrints(&retval, msg);
@@ -150,19 +152,23 @@ sgx_status_t newContractChainGetSignatureEnclave(
     contract_chain_t *contract, sgx_ec256_signature_t *return_signature,
     sgx_ec256_signature_t *signatures, uint8_t num_signatures) {
   uint8_t verify_result = 0;
+  uint8_t should_update_ecu = true;
   sgx_status_t status = SGX_SUCCESS;
   memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
   status = validateSignaturesHelper(contract, signatures, num_signatures);
   if (status != SGX_SUCCESS) {
     return status;
   }
-  status = checkParametersHelper(contract);
+  status = checkParametersHelper(contract, &should_update_ecu);
   if (status != SGX_SUCCESS) {
     return status;
   }
   status = updateParametersHelper(contract);
   if (status != SGX_SUCCESS) {
     return status;
+  }
+  if (should_update_ecu) {
+    sendECUMessage();
   }
   status = signContractHelper(contract, return_signature);
   if (status != SGX_SUCCESS) {
@@ -172,24 +178,6 @@ sgx_status_t newContractChainGetSignatureEnclave(
   return SGX_SUCCESS;
 }
 
-sgx_status_t validateSignatures(contract_chain_t *contract,
-                                sgx_ec256_signature_t *signatures,
-                                uint8_t num_signatures) {
-  return validateSignaturesHelper(contract, signatures, num_signatures);
-}
-
-sgx_status_t checkParameters(contract_chain_t *contract) {
-  return checkParametersHelper(contract);
-}
-
-sgx_status_t updateParameters(contract_chain_t *contract) {
-  return updateParametersHelper(contract);
-}
-
-sgx_status_t signContract(contract_chain_t *contract,
-                          sgx_ec256_signature_t *return_signature) {
-  return signContractHelper(contract, return_signature);
-}
 ////////////////////////////////////////////////////////////////////////////////
 
 // PRIVATE
@@ -197,23 +185,26 @@ sgx_status_t signContract(contract_chain_t *contract,
 sgx_status_t sendECUMessage() {
   sgx_ec256_signature_t signature;
   ecu_message_t message;
-  return sendECUMessage(&signature, &message);
-}
 
-sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
-                            ecu_message_t *message) {
   message->position = position;
+  message->num_vehicles = num_vehicles;
   message->recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;
-  message->chain_length = enclave_parameters.chain_length;
   message->upper_speed = enclave_parameters.upper_speed;
   message->lower_speed = enclave_parameters.lower_speed;
   message->upper_accel = enclave_parameters.upper_accel;
   message->lower_accel = enclave_parameters.lower_accel;
   message->max_decel = enclave_parameters.max_decel;
 
+  return sendECUMessage(&signature, &message);
+}
+
+sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
+                            ecu_message_t *message) {
+
   int retval = 0;
   sgx_ecc_state_handle_t handle;
   sgx_status_t status = SGX_SUCCESS;
+  sgx_status_t ret = SGX_SUCCESS;
 
   // Open ecc256 context
   status = sgx_ecc256_open_context(&handle);
@@ -228,7 +219,7 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
   if (status != SGX_SUCCESS) {
     char msg[] = "ERROR: Signing failed";
     ocallPrints(&retval, msg);
-    return status;
+    ret = status;
   }
 
   status = sgx_ecc256_close_context(handle);
@@ -236,6 +227,9 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
     char msg[] = "ERROR: close ecc256 context failed";
     ocallPrints(&retval, msg);
     return status;
+  }
+  if (ret != SGX_SUCCESS) {
+    return ret;
   }
 
   retval = 0;
@@ -245,7 +239,10 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
   uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
   verifyMessageSignature((uint8_t *)message, sizeof(ecu_message_t),
                          &ecu_signature, ecu_pub_key, &verify_result);
-  if (verify_result == SGX_EC_VALID) { // TODO
+  if (verify_result != SGX_EC_VALID) {
+    char msg[] = "ERROR: could not verify ECU signature";
+    ocallPrints(&retval, msg);
+    return SGX_ERROR_UNEXPECTED;
   }
 
   return SGX_SUCCESS;
@@ -258,6 +255,7 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
   int retval = 0;
   sgx_ecc_state_handle_t handle;
   sgx_status_t status = SGX_SUCCESS;
+  sgx_status_t retval = SGX_SUCCESS;
 
   // Open ecc256 context
   status = sgx_ecc256_open_context(&handle);
@@ -272,7 +270,7 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
   if (status != SGX_SUCCESS) {
     char msg[] = "ERROR: Verifying failed";
     ocallPrints(&retval, msg);
-    return status;
+    retval = status;
   }
 
   status = sgx_ecc256_close_context(handle);
@@ -282,10 +280,15 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
     return status;
   }
 
-  return SGX_SUCCESS;
+  return retval;
 }
 
-sgx_status_t checkParametersHelper(contract_chain_t *contract) {
+sgx_status_t checkParametersHelper(contract_chain_t *contract,
+                                   uint8_t *should_update_ecu) {
+  // should we update the ecu?
+  // Yes, unless (we are the leader && this is a deceleration/reverse chain)
+  *should_update_ecu = true;
+
   // deceleration
   if (contract->lower_speed < enclave_parameters.lower_speed &&
       contract->upper_speed < enclave_parameters.upper_speed) {
@@ -298,15 +301,19 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract) {
           return SGX_ERROR_UNEXPECTED;
         }
       }
+      // if we get here, this is a deceleration chain
+      if (position == 0) {          // and we're the leader
+        *should_update_ecu = false; // so we shouldn't update the ECU
+      }
       return SGX_SUCCESS;
     }
   }
 
   // acceleration
-  else if (contract->lower_speed > enclave_parameters.lower_speed &&
-           contract->upper_speed > enclave_parameters.upper_speed) {
-    for (int i = 0; i < contract->chain_length + 1; ++i) {
-      if ((i == 0 || i == contract->chain_length) &&
+  else if (contract->lower_speed > enclave_parameters.lower_speed) {
+
+    for (int i = 0; i < contract->chain_length; ++i) {
+      if ((i == 0 || i == contract->chain_length - 1) &&
           contract->chain_order[i] != 0) {
         return SGX_ERROR_UNEXPECTED;
       } else {
@@ -326,10 +333,11 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract) {
 
 sgx_status_t updateParametersHelper(contract_chain_t *contract) {
   enclave_parameters = *contract;
-  for (int i = 0; i < enclave_parameters.chain_length; ++i) {
-    enclave_parameters.chain_order[i] = contract->chain_order[i];
-  }
-  return sendECUMessage();
+  // for (int i = 0; i < enclave_parameters.chain_length; ++i) {
+  //  enclave_parameters.chain_order[i] = contract->chain_order[i];
+  //}
+  // return sendECUMessage();
+  return SGX_SUCCESS;
 }
 
 sgx_status_t signContractHelper(contract_chain_t *contract,
@@ -338,6 +346,7 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
   int retval = 0;
   sgx_ecc_state_handle_t handle;
   sgx_status_t status = SGX_SUCCESS;
+  sgx_status_t retval = SGX_SUCCESS;
 
   // Open ecc256 context
   status = sgx_ecc256_open_context(&handle);
@@ -352,7 +361,7 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
   if (status != SGX_SUCCESS) {
     char msg[] = "ERROR: Signing failed";
     ocallPrints(&retval, msg);
-    return status;
+    retval = status;
   }
 
   status = sgx_ecc256_close_context(handle);
@@ -362,29 +371,12 @@ sgx_status_t signContractHelper(contract_chain_t *contract,
     return status;
   }
 
-  return SGX_SUCCESS;
-}
-sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
-                                      sgx_ec256_signature_t *signatures,
-                                      uint8_t num_signatures) {
-  uint8_t result = 0;
-  for (uint8_t i = 0; i < num_signatures; ++i) {
-    verifyMessageSignature((uint8_t *)contract, sizeof(contract_chain_t),
-                           signatures + i, pub_keys + contract->chain_order[i],
-                           &result);
-    if (result != SGX_EC_VALID) {
-      int retval = 0;
-      char msg[] = "Invalid signature";
-      ocallPrints(&retval, msg);
-      return SGX_ERROR_UNEXPECTED;
-    }
-  }
-  return SGX_SUCCESS;
+  return retval;
 }
 ////////////////////////////////////////////////////////////////////////////////
-
 // PUBLIC DEBUG
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef COMMPACT_DEBUG
 sgx_status_t enclave_status() {
   int rand[1] = {0};
   sgx_read_rand((unsigned char *)rand, sizeof(unsigned int));
@@ -397,4 +389,25 @@ sgx_status_t getPosition(int *pos) {
   memcpy(pos, &position, sizeof(int));
   return SGX_SUCCESS;
 }
+
+sgx_status_t validateSignatures(contract_chain_t *contract,
+                                sgx_ec256_signature_t *signatures,
+                                uint8_t num_signatures) {
+  return validateSignaturesHelper(contract, signatures, num_signatures);
+}
+
+sgx_status_t checkParameters(contract_chain_t *contract) {
+  uint8_t ignore;
+  return checkParametersHelper(contract, &ignore);
+}
+
+sgx_status_t updateParameters(contract_chain_t *contract) {
+  return updateParametersHelper(contract);
+}
+
+sgx_status_t signContract(contract_chain_t *contract,
+                          sgx_ec256_signature_t *return_signature) {
+  return signContractHelper(contract, return_signature);
+}
+#endif
 ////////////////////////////////////////////////////////////////////////////////

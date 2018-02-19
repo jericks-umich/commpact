@@ -232,7 +232,10 @@ commpact_status_t newContractChainGetSignatureEnclave(
 }
 
 // private (static) functions
+
+// debug functions
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef COMMPACT_DEBUG
 commpact_status_t validateSignaturesHelper(uint64_t enclave_id,
                                            contract_chain_t *contract,
                                            cp_ec256_signature_t *signatures,
@@ -294,6 +297,8 @@ commpact_status_t signContractHelper(uint64_t enclave_id,
 
   return CP_SUCCESS;
 }
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // ocalls in enclave

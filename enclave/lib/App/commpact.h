@@ -3,6 +3,8 @@
 
 #define ENCLAVE_FILENAME "/tmp/enclave.signed.so"
 
+#define COMMPACT_DEBUG
+
 #include "../include/commpact_types.h"
 
 // public (API exposed) functions
@@ -23,7 +25,10 @@ commpact_status_t newContractChainGetSignatureEnclave(
 ////////////////////////////////////////////////////////////////////////////////
 
 // private (static) functions
+
+// debug functions
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef COMMPACT_DEBUG
 commpact_status_t validateSignaturesHelper(uint64_t enclave_id,
                                            contract_chain_t *contract,
                                            cp_ec256_signature_t *signatures,
@@ -35,6 +40,7 @@ commpact_status_t updateParametersHelper(uint64_t enclave_id,
 commpact_status_t signContractHelper(uint64_t enclave_id,
                                      contract_chain_t *contract,
                                      cp_ec256_signature_t *return_signature);
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif /* COMMPACT_H */

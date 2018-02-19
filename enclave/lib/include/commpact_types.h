@@ -43,7 +43,7 @@ typedef struct _contract_chain_t {
   double recovery_phase_timeout; // recovery phase extended to this time
   uint8_t contract_type; // flag bitmap: join = 0x4, leave = 0x2, split = 0x1,
                          // normal = 0x0
-  uint8_t chain_length;  // number of vehicles in the chain
+  uint8_t chain_length;  // number of entries in the chain_order
   uint8_t chain_order[MAX_PLATOON_VEHICLES + 1]; // array of vehicle positions;
   // contract chain should be passed
   // in this order

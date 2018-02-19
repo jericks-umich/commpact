@@ -287,19 +287,25 @@ sgx_status_t verifyMessageSignature(uint8_t *message, uint64_t message_size,
 
 sgx_status_t checkParametersHelper(contract_chain_t *contract) {
   // deceleration
-  if (contract->lower_speed < enclave_parameters.lower_speed &&
-      contract->upper_speed < enclave_parameters.upper_speed) {
-    for (int i = 0; i < contract->chain_length + 1; ++i) {
-      if ((i == 0 || i == contract->chain_length) &&
-          contract->chain_order[i] != 0) {
-        return SGX_ERROR_UNEXPECTED;
-      } else {
-        if (contract->chain_order[i] != contract->chain_length - i) {
-          return SGX_ERROR_UNEXPECTED;
-        }
-      }
-      return SGX_SUCCESS;
+  if (contract->upper_speed < enclave_parameters.upper_speed) {
+    // check position 0
+    if (contract->chain_order[0] != 0) {
+      return SGX_ERROR_UNEXPECTED;
     }
+
+    // check position 1
+    if (contract->chain_order[1] != num_vehicles - 1) {
+      return SGX_ERROR_UNEXPECTED;
+    }
+
+    // check position 2 and beyond
+    for (int i = 2; i < contract->chain_length; ++i) {
+      if (contract->chain_order[i] != contract->chain_order[i - 1] - 1) {
+        return SGX_ERROR_UNEXPECTED;
+      }
+    }
+
+    return SGX_SUCCESS;
   }
 
   // acceleration

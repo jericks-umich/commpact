@@ -1,9 +1,9 @@
 #ifndef ECU_H
 #define ECU_H
 
-#include "sgx_tcrypto.h"
-#include "string.h"
+//#include "sgx_tcrypto.h"
 #include <stdio.h>
+#include <string.h>
 
 #include "../include/commpact_types.h"
 #include "../include/ecu_types.h"

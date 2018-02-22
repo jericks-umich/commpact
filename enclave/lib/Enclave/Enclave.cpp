@@ -122,19 +122,19 @@ sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
   return SGX_SUCCESS;
 }
 
-sgx_status_t setInitialSpeedBounds(double lower, double upper) {
+sgx_status_t setInitialSpeedBoundsEnclave(double lower, double upper) {
   enclave_parameters.lower_speed = lower;
   enclave_parameters.upper_speed = upper;
   return SGX_SUCCESS;
 }
 
-sgx_status_t setInitialRecoveryPhaseTimeout(double timeout) {
+sgx_status_t setInitialRecoveryPhaseTimeoutEnclave(double timeout) {
   enclave_parameters.recovery_phase_timeout = timeout;
   sendECUMessage();
   return SGX_SUCCESS;
 }
 
-sgx_status_t checkAllowedSpeed(double speed, bool *verdict) {
+sgx_status_t checkAllowedSpeedEnclave(double speed, bool *verdict) {
   if (!(enclave_parameters.lower_speed <= speed &&
         speed <= enclave_parameters.upper_speed)) {
     *verdict = false;

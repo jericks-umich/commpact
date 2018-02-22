@@ -1,6 +1,8 @@
 #ifndef COMMPACT_STATUS_H
 #define COMMPACT_STATUS_H
 
+#include <stdint.h>
+
 #define CP_MK_ERROR(x) (0x00000000 | (x))
 
 typedef enum {
@@ -25,11 +27,12 @@ typedef struct _cp_ec256_signature_t {
 } cp_ec256_signature_t;
 
 typedef struct _cp_ec256_private_t {
-  uint8_t r[SGX_ECP256_KEY_SIZE];
+  uint8_t r[CP_ECP256_KEY_SIZE];
 } cp_ec256_private_t;
-// Contract Chain Message Type
 
 #define MAX_PLATOON_VEHICLES 8
+
+// Contract Chain Message Type
 #define COMMPACT_JOIN 0x4
 #define COMMPACT_LEAVE 0x2
 #define COMMPACT_SPLIT 0x1
@@ -54,6 +57,4 @@ typedef struct _contract_chain_t {
   float max_decel;   // declared maximum deceleration rate for a joining vehicle
 } contract_chain_t;
 
-#define FLAG_SET_POSITION 0x1
-#define FLAG_SET_PLATOON_LEN 0X2
 #endif // COMMPACT_STATUS_H

@@ -8,6 +8,8 @@
 #include "sgx_tcrypto.h"
 #include "sgx_urts.h"
 
+#include "../include/ecu_types.h"
+
 #include "Enclave_u.h"
 #include "commpact.h"
 #include "ecu.h"
@@ -162,7 +164,7 @@ commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
     return CP_INVALID_PARAMETER;
   }
 
-  status = setInitialSpeedBounds(enclave_id, &retval, lower, upper);
+  status = setInitialSpeedBoundsEnclave(enclave_id, &retval, lower, upper);
   if (status != SGX_SUCCESS) {
     printf("ERROR: setInitialSpeedBounds(), enclave: %lu\n", enclave_id);
     return CP_ERROR;
@@ -179,7 +181,7 @@ commpact_status_t setInitialRecoveryPhaseTimeout(uint64_t enclave_id,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  status = setInitialRecoveryPhaseTimeout(enclave_id, &retval, timeout);
+  status = setInitialRecoveryPhaseTimeoutEnclave(enclave_id, &retval, timeout);
   if (status != SGX_SUCCESS) {
     printf("ERROR: setInitialRecoveryPhaseTimeout(), enclave: %lu\n",
            enclave_id);
@@ -198,7 +200,7 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  status = checkAllowedSpeed(enclave_id, &retval, speed, verdict);
+  status = checkAllowedSpeedEnclave(enclave_id, &retval, speed, verdict);
   if (status != SGX_SUCCESS) {
     printf("ERROR: checkAllowedSpeed(), enclave: %lu\n", enclave_id);
     return CP_ERROR;
@@ -214,7 +216,7 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 // If the contract is valid and accepted, it should be signed by this enclave
 // and the new signature should be returned by setting return_signature
 
-commpact_status_t newContractChainGetSignatureEnclave(
+commpact_status_t newContractChainGetSignatureCommpact(
     uint64_t enclave_id, contract_chain_t contract,
     cp_ec256_signature_t *return_signature, uint8_t num_signatures,
     cp_ec256_signature_t *signatures) {
@@ -307,13 +309,14 @@ int ocallPrints(const char *str) {
   printf("The enclave encountered issues: %s\n", str);
 }
 
-int ocallECUMessage(cp_ec256_signature_t *enclave_signature,
+int ocallECUMessage(sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,
-                    cp_ec256_signature_t *ecu_signature) {
-  setParametersECU(enclave_signature, message, ecu_signature);
+                    sgx_ec256_signature_t *ecu_signature) {
+  setParametersECU((cp_ec256_signature_t *)enclave_signature, message,
+                   (cp_ec256_signature_t *)ecu_signature);
 }
 
-int ocallECUSetEnclavePubKey(cp_ec256_public_t *enclave_pub_key) {
-  setEnclavePubKey(enclave_pub_key);
+int ocallECUSetEnclavePubKey(sgx_ec256_public_t *enclave_pub_key) {
+  setEnclavePubKey((cp_ec256_public_t *)enclave_pub_key);
 }
 ////////////////////////////////////////////////////////////////////////////////

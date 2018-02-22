@@ -2,6 +2,7 @@ enclave {
 	include "sgx_tcrypto.h"
 	include "sgx_error.h"
 	include "stdbool.h"
+	include "../App/commpact.h"
 	include "../include/commpact_types.h"
 	include "../include/ecu_types.h"
 
@@ -31,9 +32,9 @@ enclave {
 								uint8_t platoon_len_in);
 		
     // mel's function declarations
-		public sgx_status_t setInitialSpeedBounds(double lower, double upper);
-		public sgx_status_t setInitialRecoveryPhaseTimeout(double timeout);
-		public sgx_status_t checkAllowedSpeed(double speed, [out] bool* verdict);
+		public sgx_status_t setInitialSpeedBoundsEnclave(double lower, double upper);
+		public sgx_status_t setInitialRecoveryPhaseTimeoutEnclave(double timeout);
+		public sgx_status_t checkAllowedSpeedEnclave(double speed, [out] bool* verdict);
 		
 		// Set ecu's pubkey
 		public sgx_status_t setECUPubKey([in] sgx_ec256_public_t* ecu_pub_key_in);

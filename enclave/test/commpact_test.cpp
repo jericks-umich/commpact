@@ -8,9 +8,8 @@
 #include <unistd.h>
 
 #include "commpact.h"
-#include "include/commpact_types.h"
-
 #include "commpact_test.h"
+#include "include/commpact_types.h"
 
 #define TEST_ROUNDS_FOR_KENGEN                                                 \
   10 // We generate kys for a several rounds to ensure nothing goes wrong
@@ -67,7 +66,7 @@ Returns
 retval : commpact_status_t
 */
 commpact_status_t testInitEnclave(uint64_t *e_id) {
-  commpact_status_t status = initEnclave(e_id);
+  commpact_status_t status = initEnclaveWithFilename(e_id, ENCLAVE_FILENAME);
   return status;
 }
 

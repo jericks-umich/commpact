@@ -1,11 +1,10 @@
 #ifndef COMMPACT_H
 #define COMMPACT_H
 
-#define ENCLAVE_FILENAME "/tmp/enclave.signed.so"
+#define DEFAULT_ENCLAVE_FILENAME "/tmp/enclave.signed.so"
 
 #define COMMPACT_DEBUG
 
-#include "../include/commpact_crypto_types.h"
 #include "../include/commpact_types.h"
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +12,9 @@ extern "C" {
 
 // public (API exposed) functions
 ////////////////////////////////////////////////////////////////////////////////
-commpact_status_t initEnclave(uint64_t *enclave_id);
+commpact_status_t initEnclave(uint64_t *e_id);
+commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
+                                          const char *enclave_filename);
 commpact_status_t setInitialPosition(uint64_t enclave_id, int position);
 commpact_status_t initializeKeys(uint64_t enclave_id,
                                  cp_ec256_public_t *pubkey);

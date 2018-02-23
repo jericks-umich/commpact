@@ -1,7 +1,6 @@
 #ifndef ECU_H
 #define ECU_H
 
-#include "../include/commpact_crypto_types.h"
 #include "../include/commpact_types.h"
 #include "../include/ecu_types.h"
 #include <stdio.h>

@@ -1,5 +1,5 @@
-#ifndef COMMPACT_H
-#define COMMPACT_H
+#ifndef COMMPACT_TEST_H
+#define COMMPACT_TEST_H
 
 #define ENCLAVE_FILENAME "../lib/enclave.signed.so"
 #define KEY_STORE_FILENAME "/tmp/sgx_ec256_key_store.dump"
@@ -34,4 +34,4 @@ commpact_status_t testInitEnclave(uint64_t *e_id);
 // TODO test for set position
 
 // TODO test for set initial pub keys
-#endif // COMMPACT_H
+#endif // COMMPACT_TEST_H

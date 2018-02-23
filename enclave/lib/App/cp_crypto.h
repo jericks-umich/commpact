@@ -1,7 +1,8 @@
-#include "../include/commpact_crypto_types.h"
-#include "../include/commpact_types.h"
 #ifndef _CP_CRYPTO_H
 #define _CP_CRYPTO_H
+
+#include "../include/commpact_types.h"
+
 commpact_status_t cp_ecc256_open_context(void **p_ecc_handle);
 commpact_status_t cp_ecc256_close_context(void *ecc_handle);
 commpact_status_t cp_ecc256_create_key_pair(cp_ec256_private_t *p_private,

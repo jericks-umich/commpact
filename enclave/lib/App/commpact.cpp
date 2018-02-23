@@ -24,6 +24,12 @@
 ///////////////////////////
 // Initialize instance of crypto enclave
 commpact_status_t initEnclave(uint64_t *e_id) {
+  return initEnclaveWithFilename(e_id, DEFAULT_ENCLAVE_FILENAME);
+}
+
+// Initialize instance of crypto enclave
+commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
+                                          const char *enclave_filename) {
   sgx_enclave_id_t *enclave_id =
       (sgx_enclave_id_t *)e_id; // casting it to the correct type -- we don't
                                 // want to require sgx types outside of the .so
@@ -35,7 +41,7 @@ commpact_status_t initEnclave(uint64_t *e_id) {
   // create new enclave
   // https://software.intel.com/sites/products/sgx-sdk-users-guide-windows/Content/sgx_create_enclave.htm
   // https://software.intel.com/en-us/node/709072
-  ret = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated,
+  ret = sgx_create_enclave(enclave_filename, SGX_DEBUG_FLAG, &token, &updated,
                            enclave_id, NULL);
   if (ret != SGX_SUCCESS) {
     printf("ERROR: failed (%x) to initialize SGX crypto enclave.\n", ret);

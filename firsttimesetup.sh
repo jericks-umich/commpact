@@ -45,24 +45,33 @@ ln -s $THIS_DIR/enclave/lib/libcommpact.so.1 $THIS_DIR/lib/libcommpact.so
 # symlink the enclave .so to /tmp
 ln -s $THIS_DIR/enclave/lib/enclave.signed.so /tmp/
 
-echo "=========================="
-echo "= Downloading OMNet++... ="
-echo "=========================="
 # download OMNeT++
 pushd $THIS_DIR
-wget --user-agent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0' --header='Referer: https://www.omnetpp.org/component/jdownloads/category/32-release-older-versions?start=10' https://www.omnetpp.org/component/jdownloads/send/32-release-older-versions/2305-omnetpp-50-linux -O omnetpp-5.0.tgz
-echo "====================="
-echo "= Unpacking OMNet++ ="
-echo "====================="
-tar -xf omnetpp-5.0.tgz
-rm omnetpp-5.0.tgz
-echo "===================="
-echo "= Building OMNet++ ="
-echo "===================="
-cd omnetpp-5.0/
-source ./setenv -f
-./configure
-make -j$(nproc)
+if [ -d "omnetpp-5.0" ]; then
+	echo "=========================="
+	echo "= OMNet++ already exists ="
+	echo "=========================="
+	echo "==========================="
+	echo "= Not Downloading OMNet++ ="
+	echo "==========================="
+else
+	echo "=========================="
+	echo "= Downloading OMNet++... ="
+	echo "=========================="
+	wget --user-agent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0' --header='Referer: https://www.omnetpp.org/component/jdownloads/category/32-release-older-versions?start=10' https://www.omnetpp.org/component/jdownloads/send/32-release-older-versions/2305-omnetpp-50-linux -O omnetpp-5.0.tgz
+	echo "====================="
+	echo "= Unpacking OMNet++ ="
+	echo "====================="
+	tar -xf omnetpp-5.0.tgz
+	rm omnetpp-5.0.tgz
+	echo "===================="
+	echo "= Building OMNet++ ="
+	echo "===================="
+	cd omnetpp-5.0/
+	source ./setenv -f
+	./configure
+	make -j$(nproc)
+fi
 popd
 
 # check out the sumo and veins submodules

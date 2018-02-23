@@ -9,7 +9,7 @@ CommPact_Lib 					:= $(CommPact_Lib_Path)/libcommpact.so.1
 #Test_App_Objects 		   := $(Test_App_Name).o
 Test_App_Include_Flags := -I$(CommPact_Lib_Path)/App -I$(CommPact_Lib_Path)
 #Test_App_Include_Flags := -I$(CommPact_Lib_Path)/App -I/opt/intel/sgxsdk/include -I$(CommPact_Lib_Path)
-Test_App_Link_Flags 	 := -L$(CommPact_Lib_Path) -Wl,-rpath=$(CommPact_Lib_Path)
+Test_App_Link_Flags 	 := -L$(CommPact_Lib_Path) -Wl,-rpath=$(CommPact_Lib_Path) -lssl -lcrypto
 
 all: $(Test_App_Name)
 

@@ -1,10 +1,11 @@
+#include "cp_crypto.h"
 #include <openssl/bn.h>
 #include <openssl/ec.h>
+#include <openssl/ecdsa.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
-
-#include "cp_crypto.h"
+#include <string.h>
 
 commpact_status_t cp_ecc256_open_context(void **p_ecc_handle) {
   if (p_ecc_handle == NULL) {
@@ -12,12 +13,10 @@ commpact_status_t cp_ecc256_open_context(void **p_ecc_handle) {
   }
 
   commpact_status_t retval = CP_SUCCESS;
-  CLEAR_OPENSSL_ERROR_QUEUE;
 
   /* construct a curve p-256 */
   EC_GROUP *ec_group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
   if (NULL == ec_group) {
-    GET_LAST_OPENSSL_ERROR;
     retval = CP_ERROR;
   } else {
     *p_ecc_handle = (void *)ec_group;
@@ -49,8 +48,6 @@ commpact_status_t cp_ecc256_create_key_pair(cp_ec256_private_t *p_private,
   const EC_POINT *public_k = NULL;
   const BIGNUM *private_k = NULL;
   commpact_status_t ret = CP_ERROR;
-
-  CLEAR_OPENSSL_ERROR_QUEUE;
 
   do {
     // create new EC key
@@ -123,12 +120,11 @@ commpact_status_t cp_ecc256_create_key_pair(cp_ec256_private_t *p_private,
   } while (0);
 
   if (CP_SUCCESS != ret) {
-    GET_LAST_OPENSSL_ERROR;
     // in case of error, clear output buffers
     //
-    memset_s(p_private, sizeof(p_private), 0, sizeof(p_private));
-    memset_s(p_public->gx, sizeof(p_public->gx), 0, sizeof(p_public->gx));
-    memset_s(p_public->gy, sizeof(p_public->gy), 0, sizeof(p_public->gy));
+    memset(p_private, 0, sizeof(p_private));
+    memset(p_public->gx, 0, sizeof(p_public->gx));
+    memset(p_public->gy, 0, sizeof(p_public->gy));
   }
 
   // free temp data
@@ -159,7 +155,6 @@ commpact_status_t cp_ecdsa_sign(const uint8_t *p_data, uint32_t data_size,
   int sig_size = 0;
   int max_sig_size = 0;
   commpact_status_t retval = CP_ERROR;
-  CLEAR_OPENSSL_ERROR_QUEUE;
 
   do {
     // converts the r value of private key, represented as positive integer in
@@ -249,7 +244,7 @@ commpact_status_t cp_ecdsa_sign(const uint8_t *p_data, uint32_t data_size,
   } while (0);
 
   if (CP_SUCCESS != retval) {
-    GET_LAST_OPENSSL_ERROR;
+    // GET_LAST_OPENSSL_ERROR;
   }
 
   if (bn_priv)
@@ -285,8 +280,6 @@ commpact_status_t cp_ecdsa_verify(const uint8_t *p_data, uint32_t data_size,
   int valid = 0;
 
   *p_result = CP_EC_INVALID_SIGNATURE;
-
-  CLEAR_OPENSSL_ERROR_QUEUE;
 
   do {
     // converts the x value of public key, represented as positive integer in
@@ -418,10 +411,6 @@ commpact_status_t cp_ecdsa_verify(const uint8_t *p_data, uint32_t data_size,
 
     retval = CP_SUCCESS;
   } while (0);
-
-  if (CP_SUCCESS != retval) {
-    GET_LAST_OPENSSL_ERROR;
-  }
 
   if (bn_pub_x)
     BN_clear_free(bn_pub_x);

@@ -145,6 +145,15 @@ sgx_status_t checkAllowedSpeedEnclave(double speed, bool *verdict) {
 }
 
 sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
+
+  if (ecu_pub_key != NULL) {
+    free(ecu_pub_key);
+    pub_keys = NULL;
+  }
+
+  // Allocate new memory
+  ecu_pub_key = (sgx_ec256_public_t *)calloc(1, sizeof(sgx_ec256_public_t));
+
   memcpy(ecu_pub_key, ecu_pub_key_in, sizeof(sgx_ec256_public_t));
   return SGX_SUCCESS;
 }

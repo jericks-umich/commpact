@@ -100,6 +100,7 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
     printf("Failed initialize keys\n");
     return CP_ERROR;
   }
+
   // Generate a key pair in ecu and pass the key to enclave
   cp_ec256_public_t ecu_pub_key;
   status = (sgx_status_t)generateKeyPair(&ecu_pub_key);

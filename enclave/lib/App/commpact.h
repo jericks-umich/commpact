@@ -5,8 +5,8 @@
 
 #define COMMPACT_DEBUG
 
+#include "../include/commpact_crypto_types.h"
 #include "../include/commpact_types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -73,16 +73,15 @@ sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
 
 // This is the function to set vehicle's position
 // It returns signature of this flag|data
-sgx_status_t setPosition(int *pos, sgx_ec256_signature_t *sig) {
+sgx_status_t setPosition(int pos) {
 
-  int retval = 0;
-
-  memcpy(&position, pos, sizeof(int));
-  if (key_pair == NULL) {
-    char msg[] = "ERROR: public key has not been generated";
-    ocallPrints(&retval, msg);
-    return SGX_ERROR_UNEXPECTED;
-  }
+  position = pos;
+  // memcpy(&position, pos, sizeof(int));
+  // if (key_pair == NULL) {
+  //  char msg[] = "ERROR: public key has not been generated";
+  //  ocallPrints(&retval, msg);
+  //  return SGX_ERROR_UNEXPECTED;
+  //}
   return SGX_SUCCESS;
 }
 
@@ -115,9 +114,6 @@ sgx_status_t setPubKeys(sgx_ec256_public_t *pub_keys_in,
 
   // Copy the public keys into the inside memory
   memcpy(pub_keys, pub_keys_in, platoon_len_in * sizeof(sgx_ec256_public_t));
-
-  // Set the length of the platoon
-  enclave_parameters.chain_length = platoon_len_in;
 
   return SGX_SUCCESS;
 }

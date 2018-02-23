@@ -62,9 +62,7 @@ commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
   }
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
-  cp_ec256_public_t sig;
-  status = setPosition(enclave_id, &retval, &position,
-                       (sgx_ec256_signature_t *)&sig);
+  status = setPosition(enclave_id, &retval, position);
   if (status != SGX_SUCCESS) {
     printf("failed set position: enclave : %lu, position : %d\n", enclave_id,
            position);
@@ -162,18 +160,19 @@ commpact_status_t setInitialSpeedBounds(uint64_t enclave_id, double lower,
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  bool lower_verdict = false;
-  bool upper_verdict = false;
-  checkAllowedSpeed(enclave_id, lower, &lower_verdict);
-  checkAllowedSpeed(enclave_id, upper, &upper_verdict);
+  // bool lower_verdict = false;
+  // bool upper_verdict = false;
+  // checkAllowedSpeed(enclave_id, lower, &lower_verdict);
+  // checkAllowedSpeed(enclave_id, upper, &upper_verdict);
 
-  if (!(lower_verdict && upper_verdict)) {
-    return CP_INVALID_PARAMETER;
-  }
+  // if (!(lower_verdict && upper_verdict)) {
+  //  return CP_INVALID_PARAMETER;
+  //}
 
   status = setInitialSpeedBoundsEnclave(enclave_id, &retval, lower, upper);
   if (status != SGX_SUCCESS) {
-    printf("ERROR: setInitialSpeedBounds(), enclave: %lu\n", enclave_id);
+    printf("ERROR: setInitialSpeedBounds(), status: %d, enclave: %lu\n", status,
+           enclave_id);
     return CP_ERROR;
   }
 

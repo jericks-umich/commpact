@@ -19,7 +19,7 @@ enclave {
 		
 		//This is the function to set vehicle's position
 		//It returns the signature of this position
-		public sgx_status_t setPosition([in] int* pos, [out] sgx_ec256_signature_t* sig);
+		public sgx_status_t setPosition(int pos);
 	
 		//This is the function to set all pubkeys of vehicles in the platoon
 		//It takes 2 parameters

@@ -57,7 +57,7 @@ else
 endif
 
 # CommPact library source code
-CommPact_Cpp_Files := App/$(LIB_NAME).cpp App/ecu.cpp App/cp_crypto.cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
+CommPact_Cpp_Files := App/$(LIB_NAME).cpp App/ecu.cpp App/fake_sgx_funcs.cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
 CommPact_Include_Paths := -IInclude -IApp -I$(SGX_SDK)/include -I./include
 
 CommPact_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(CommPact_Include_Paths)
@@ -75,7 +75,7 @@ else
 endif
 
 CommPact_Cpp_Flags := $(CommPact_C_Flags) -std=c++11
-CommPact_Link_Flags := $(SGX_COMMON_CFLAGS) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread
+CommPact_Link_Flags := $(SGX_COMMON_CFLAGS) -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread ../../lib/libsgx_tcrypto.a
 
 ifneq ($(SGX_MODE), HW)
 	CommPact_Link_Flags += -lsgx_uae_service_sim

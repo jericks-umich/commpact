@@ -6,6 +6,7 @@
 #define COMMPACT_DEBUG
 
 #include "../include/commpact_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

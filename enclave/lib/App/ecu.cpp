@@ -1,5 +1,6 @@
 #include "ecu.h"
-#include "cp_crypto.h"
+#include "sgx_tcrypto.h"
+//#include "cp_crypto.h"
 
 ///////////////////////
 // GLOBAL PARAMETERS //
@@ -20,8 +21,10 @@ commpact_status_t setParametersECU(cp_ec256_signature_t *enclave_signature,
 
   uint8_t verify_result = 0;
   void *handle;
-  cp_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t), &enclave_pub_key,
-                  enclave_signature, &verify_result, handle);
+  sgx_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t),
+                   (sgx_ec256_public_t *)&enclave_pub_key,
+                   (sgx_ec256_signature_t *)enclave_signature, &verify_result,
+                   handle);
 
   if (verify_result != CP_EC_VALID) {
     memset(ecu_signature, 0, sizeof(cp_ec256_signature_t));
@@ -38,56 +41,58 @@ commpact_status_t setParametersECU(cp_ec256_signature_t *enclave_signature,
 commpact_status_t generateKeyPair(cp_ec256_public_t *pub_key) {
 
   int retval = 0;
-  commpact_status_t status = CP_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
   void *ecc_handle;
 
-  status = cp_ecc256_open_context(&ecc_handle);
-  if (status != CP_SUCCESS) {
+  status = sgx_ecc256_open_context(&ecc_handle);
+  if (status != SGX_SUCCESS) {
     printf("ERROR: ecu open ec256 context failed");
-    return status;
+    return CP_ERROR;
   }
 
-  status = cp_ecc256_create_key_pair(&ecu_priv_key, &ecu_pub_key, ecc_handle);
-  if (status != CP_SUCCESS) {
+  status = sgx_ecc256_create_key_pair((sgx_ec256_private_t *)&ecu_priv_key,
+                                      (sgx_ec256_public_t *)&ecu_pub_key,
+                                      ecc_handle);
+  if (status != SGX_SUCCESS) {
     printf("ERROR: ecu generate ec256 key pair failed");
-    return status;
+    return CP_ERROR;
   }
 
-  status = cp_ecc256_close_context(ecc_handle);
-  if (status != CP_SUCCESS) {
+  status = sgx_ecc256_close_context(ecc_handle);
+  if (status != SGX_SUCCESS) {
     printf("ERROR: ecu close ec256 context failed");
-    return status;
+    return CP_ERROR;
   }
 
   memcpy(pub_key, &ecu_pub_key, sizeof(cp_ec256_public_t));
-  return status;
+  return CP_SUCCESS;
 }
 
 commpact_status_t signMessage(ecu_message_t *message,
                               cp_ec256_signature_t *signature) {
   int retval = 0;
   void *handle;
-  commpact_status_t status = CP_SUCCESS;
+  sgx_status_t status = SGX_SUCCESS;
 
   // Open ecc256 context
-  status = cp_ecc256_open_context(&handle);
-  if (status != CP_SUCCESS) {
+  status = sgx_ecc256_open_context(&handle);
+  if (status != SGX_SUCCESS) {
     printf("ERROR: open ecc256 context failed");
-    return status;
+    return CP_ERROR;
   }
 
-  status = (commpact_status_t)cp_ecdsa_sign((uint8_t *)message,
-                                            sizeof(ecu_message_t),
-                                            &ecu_priv_key, signature, handle);
-  if (status != CP_SUCCESS) {
+  status = sgx_ecdsa_sign((uint8_t *)message, sizeof(ecu_message_t),
+                          (sgx_ec256_private_t *)&ecu_priv_key,
+                          (sgx_ec256_signature_t *)signature, handle);
+  if (status != SGX_SUCCESS) {
     printf("ERROR: Signing failed");
-    return status;
+    return CP_ERROR;
   }
 
-  status = cp_ecc256_close_context(handle);
-  if (status != CP_SUCCESS) {
+  status = sgx_ecc256_close_context(handle);
+  if (status != SGX_SUCCESS) {
     printf("ERROR: close ecc256 context failed");
-    return status;
+    return CP_ERROR;
   }
 
   return CP_SUCCESS;

@@ -229,11 +229,18 @@ commpact_status_t newContractChainGetSignatureCommpact(
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
+  printf("commpact: got contract, sending to enclave\n");
   status = newContractChainGetSignatureEnclave(
       enclave_id, &retval, &contract, (sgx_ec256_signature_t *)return_signature,
       (sgx_ec256_signature_t *)signatures, num_signatures);
+  printf("commpact: hopefully got signature from enclave %x\n",
+         *(unsigned int *)return_signature);
   if (status != SGX_SUCCESS) {
-    printf("ERROR: newContractChainGetSignature failed");
+    printf("ERROR: newContractChainGetSignature status = 0x%x\n", status);
+    return CP_ERROR;
+  }
+  if (retval != SGX_SUCCESS) {
+    printf("ERROR: newContractChainGetSignature retval = 0x%x\n", retval);
     return CP_ERROR;
   }
   return CP_SUCCESS;
@@ -311,9 +318,9 @@ commpact_status_t signContractHelper(uint64_t enclave_id,
 
 // ocalls in enclave
 ////////////////////////////////////////////////////////////////////////////////
-int ocallPrints(const char *str) {
-  printf("The enclave encountered issues: %s\n", str);
-}
+int ocallPrints(const char *str) { printf("%s\n", str); }
+
+int ocallPrintD(double dub) { printf("%f\n", dub); }
 
 int ocallECUMessage(sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,

@@ -160,21 +160,35 @@ sgx_status_t newContractChainGetSignatureEnclave(
   uint8_t should_update_ecu = true;
   sgx_status_t status = SGX_SUCCESS;
   memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
+  int retval = 0;
+  char *msg = "enclave: about to call validateSignaturesHelper";
+  ocallPrints(&retval, msg);
   status = validateSignaturesHelper(contract, signatures, num_signatures);
   if (status != SGX_SUCCESS) {
     return status;
   }
+  msg = "enclave: about to call checkParametersHelper";
+  ocallPrints(&retval, msg);
   status = checkParametersHelper(contract, &should_update_ecu);
   if (status != SGX_SUCCESS) {
     return status;
   }
+  msg = "enclave: about to call updateParametersHelper";
+  ocallPrints(&retval, msg);
   status = updateParametersHelper(contract);
   if (status != SGX_SUCCESS) {
     return status;
   }
   if (should_update_ecu) {
+    msg = "enclave: about to call sendECUMessage";
+    ocallPrints(&retval, msg);
     sendECUMessage();
+    if (status != SGX_SUCCESS) {
+      return status;
+    }
   }
+  msg = "enclave: about to call signContractHelper";
+  ocallPrints(&retval, msg);
   status = signContractHelper(contract, return_signature);
   if (status != SGX_SUCCESS) {
     memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
@@ -312,21 +326,41 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract,
   // Yes, unless (we are the leader && this is a deceleration/reverse chain)
   *should_update_ecu = true;
 
+  // if contract bounds are staying the same
+  if (contract->upper_speed == enclave_parameters.upper_speed &&
+      contract->lower_speed == enclave_parameters.lower_speed) {
+    // we don't need to enforce any particular ordering on the chain
+    return SGX_SUCCESS;
+  }
   // deceleration
-  if (contract->upper_speed < enclave_parameters.upper_speed) {
+  else if (contract->upper_speed < enclave_parameters.upper_speed) {
     // check position 0
     if (contract->chain_order[0] != 0) {
+      int retval = 0;
+      char msg[] = "checkParametersHelper: deceleration but leader isn't first "
+                   "in chain order";
+      ocallPrints(&retval, msg);
       return SGX_ERROR_UNEXPECTED;
     }
 
     // check position 1
     if (contract->chain_order[1] != num_vehicles - 1) {
+      int retval = 0;
+      char msg[] = "checkParametersHelper: deceleration but last vehicle isn't "
+                   "second in chain order";
+      ocallPrints(&retval, msg);
+      ocallPrintD(&retval, enclave_parameters.upper_speed);
+      ocallPrintD(&retval, contract->upper_speed);
       return SGX_ERROR_UNEXPECTED;
     }
 
     // check position 2 and beyond
     for (int i = 2; i < contract->chain_length; ++i) {
       if (contract->chain_order[i] != contract->chain_order[i - 1] - 1) {
+        int retval = 0;
+        char msg[] = "checkParametersHelper: deceleration but vehicle "
+                     "positions aren't decending in chain order";
+        ocallPrints(&retval, msg);
         return SGX_ERROR_UNEXPECTED;
       }
       // if we get here, this is a deceleration chain
@@ -343,9 +377,17 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract,
     for (int i = 0; i < contract->chain_length; ++i) {
       if ((i == 0 || i == contract->chain_length - 1) &&
           contract->chain_order[i] != 0) {
+        int retval = 0;
+        char msg[] = "checkParametersHelper: acceleration but leader isn't"
+                     "first and last in chain order";
+        ocallPrints(&retval, msg);
         return SGX_ERROR_UNEXPECTED;
       } else {
         if (contract->chain_order[i] != i) {
+          int retval = 0;
+          char msg[] = "checkParametersHelper: acceleration but vehicle "
+                       "positions aren't ascending in chain order";
+          ocallPrints(&retval, msg);
           return SGX_ERROR_UNEXPECTED;
         }
       }
@@ -355,6 +397,9 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract,
 
   // unaccounted for scenarios
   else {
+    int retval = 0;
+    char msg[] = "checkParametersHelper: we have an unaccounted scenario";
+    ocallPrints(&retval, msg);
     return SGX_ERROR_UNEXPECTED;
   }
 }

@@ -107,7 +107,8 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 
   // Generate a key pair in ecu and pass the key to enclave
   cp_ec256_public_t ecu_pub_key;
-  status = (sgx_status_t)generateKeyPair(&ecu_pub_key);
+  status = (sgx_status_t)generateKeyPair(&INITIAL_SETUP.ecus[enclave_id],
+                                         &ecu_pub_key);
   if (status != SGX_SUCCESS) {
     printf("Ecu failed generate keys\n");
     return CP_ERROR;
@@ -322,14 +323,18 @@ int ocallPrints(const char *str) { printf("%s\n", str); }
 
 int ocallPrintD(double dub) { printf("%f\n", dub); }
 
-int ocallECUMessage(sgx_ec256_signature_t *enclave_signature,
+int ocallECUMessage(uint64_t enclave_id,
+                    sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,
                     sgx_ec256_signature_t *ecu_signature) {
-  setParametersECU((cp_ec256_signature_t *)enclave_signature, message,
+  setParametersECU(&INITIAL_SETUP.ecus[enclave_id],
+                   (cp_ec256_signature_t *)enclave_signature, message,
                    (cp_ec256_signature_t *)ecu_signature);
 }
 
-int ocallECUSetEnclavePubKey(sgx_ec256_public_t *enclave_pub_key) {
-  setEnclavePubKey((cp_ec256_public_t *)enclave_pub_key);
+int ocallECUSetEnclavePubKey(uint64_t enclave_id,
+                             sgx_ec256_public_t *enclave_pub_key) {
+  setEnclavePubKey(&INITIAL_SETUP.ecus[enclave_id],
+                   (cp_ec256_public_t *)enclave_pub_key);
 }
 ////////////////////////////////////////////////////////////////////////////////

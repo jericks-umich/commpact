@@ -1,3 +1,5 @@
+#include "ecu.h"
+#include <unordered_map>
 #ifndef COMMPACT_INITIALSETUP_H
 #define COMMPACT_INITIALSETUP_H
 
@@ -45,6 +47,7 @@ public:
   bool used_list[COMMPACT_MAX_ENCLAVES] = {0};
   uint64_t enclave_id_list[COMMPACT_MAX_ENCLAVES];
   cp_ec256_public_t pubkey_list[COMMPACT_MAX_ENCLAVES];
+  std::unordered_map<uint64_t, ecu_t> ecus;
 };
 
 #endif // COMMPACT_INITIALSETUP_H

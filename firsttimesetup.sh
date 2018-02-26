@@ -35,7 +35,7 @@ echo "===================================================="
 mkdir -p $THIS_DIR/include
 ln -s $THIS_DIR/enclave/lib/App/commpact.h $THIS_DIR/include/
 ln -s $THIS_DIR/enclave/lib/include/commpact_types.h $THIS_DIR/include/
-ln -s $THIS_DIR/enclave/lib/include/ecu_types.h $THIS_DIR/include/
+#ln -s $THIS_DIR/enclave/lib/include/ecu_types.h $THIS_DIR/include/
 
 # symlink the .so files we need into the lib directory
 mkdir -p $THIS_DIR/lib

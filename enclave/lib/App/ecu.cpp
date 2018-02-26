@@ -1,6 +1,7 @@
 #include "ecu.h"
+#include "initialsetup.h"
+
 #include "sgx_tcrypto.h"
-//#include "cp_crypto.h"
 
 ///////////////////////
 // GLOBAL PARAMETERS //
@@ -11,18 +12,24 @@
 // cp_ec256_private_t ecu_priv_key;
 // cp_ec256_public_t ecu_pub_key;
 
-commpact_status_t setEnclavePubKey(ecu_t *ecu, cp_ec256_public_t *pub_key) {
+// map index is platoon position
+// std::unordered_map<uint64_t, ecu_t> ecus;
+ecu_t ecus[COMMPACT_MAX_ENCLAVES];
+
+commpact_status_t setEnclavePubKey(int position, cp_ec256_public_t *pub_key) {
+  ecu_t *ecu = &ecus[position];
   memcpy(&(ecu->enclave_pub_key), pub_key, sizeof(cp_ec256_public_t));
   return CP_SUCCESS;
 }
 
-commpact_status_t setParametersECU(ecu_t *ecu,
+commpact_status_t setParametersECU(int position,
                                    cp_ec256_signature_t *enclave_signature,
                                    ecu_message_t *message,
                                    cp_ec256_signature_t *ecu_signature) {
 
   uint8_t verify_result = 0;
   void *handle;
+  ecu_t *ecu = &ecus[position];
   sgx_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t),
                    (sgx_ec256_public_t *)&(ecu->enclave_pub_key),
                    (sgx_ec256_signature_t *)enclave_signature, &verify_result,
@@ -40,11 +47,12 @@ commpact_status_t setParametersECU(ecu_t *ecu,
   return CP_SUCCESS;
 }
 
-commpact_status_t generateKeyPair(ecu_t *ecu, cp_ec256_public_t *pub_key) {
+commpact_status_t generateKeyPair(int position, cp_ec256_public_t *pub_key) {
 
   int retval = 0;
   sgx_status_t status = SGX_SUCCESS;
   void *ecc_handle;
+  ecu_t *ecu = &ecus[position];
 
   status = sgx_ecc256_open_context(&ecc_handle);
   if (status != SGX_SUCCESS) {

@@ -92,9 +92,9 @@ int main(int argc, char *argv[]) {
   for (unsigned int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
     commpact_status_t status = initEnclave(ids + i);
     if (status == CP_SUCCESS) {
-      printf("%u enclave init succeed\n", ids[i]);
+      printf("%lu enclave init succeed\n", ids[i]);
     } else {
-      printf("%u enclave init failed\n", ids[i]);
+      printf("%lu enclave init failed\n", ids[i]);
       exit(1);
     }
   }
@@ -102,9 +102,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
     commpact_status_t status = setInitialPosition(ids[i], i);
     if (status == CP_SUCCESS) {
-      printf("%u enclave set init position succeed\n", ids[i]);
+      printf("%lu enclave set init position succeed\n", ids[i]);
     } else {
-      printf("%u enclave set init postion failed\n", ids[i]);
+      printf("%lu enclave set init postion failed\n", ids[i]);
       exit(1);
     }
   }
@@ -112,9 +112,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
     commpact_status_t status = initializeKeys(ids[i], enclave_pub_keys + i);
     if (status == CP_SUCCESS) {
-      printf("%u enclave init key succeed\n", ids[i]);
+      printf("%lu enclave init key succeed\n", ids[i]);
     } else {
-      printf("%u enclave init key failed\n", ids[i]);
+      printf("%lu enclave init key failed\n", ids[i]);
       exit(1);
     }
   }
@@ -122,9 +122,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
     commpact_status_t status = setInitialSpeedBounds(ids[i], 10, 20);
     if (status == CP_SUCCESS) {
-      printf("%u enclave init speed bounds succeed\n", ids[i]);
+      printf("%lu enclave init speed bounds succeed\n", ids[i]);
     } else {
-      printf("%u enclave init speed bounds failed\n", ids[i]);
+      printf("%lu enclave init speed bounds failed\n", ids[i]);
       exit(1);
     }
   }
@@ -132,9 +132,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
     commpact_status_t status = setInitialRecoveryPhaseTimeout(ids[i], 10);
     if (status == CP_SUCCESS) {
-      printf("%u enclave init recovery timeout succeed\n", ids[i]);
+      printf("%lu enclave init recovery timeout succeed\n", ids[i]);
     } else {
-      printf("%u enclave init revovery timeout failed\n", ids[i]);
+      printf("%lu enclave init revovery timeout failed\n", ids[i]);
       exit(1);
     }
   }
@@ -143,15 +143,15 @@ int main(int argc, char *argv[]) {
     bool verdict = false;
     commpact_status_t status = checkAllowedSpeed(ids[i], 15, &verdict);
     if (!verdict || status != CP_SUCCESS) {
-      printf("%u enclave check speed fail\n", ids[i]);
+      printf("%lu enclave check speed fail\n", ids[i]);
       exit(1);
     }
     status = checkAllowedSpeed(ids[i], 25, &verdict);
     if (verdict || status != CP_SUCCESS) {
-      printf("%u enclave check speed fail\n", ids[i]);
+      printf("%lu enclave check speed fail\n", ids[i]);
       exit(1);
     }
-    printf("%u enclave check speed succeed\n", ids[i]);
+    printf("%lu enclave check speed succeed\n", ids[i]);
   }
 
   contract_chain_t contract;
@@ -177,10 +177,11 @@ int main(int argc, char *argv[]) {
     commpact_status_t status = newContractChainGetSignatureCommpact(
         ids[contract.chain_order[i]], contract, signatures + i, i, signatures);
     if (status == CP_SUCCESS) {
-      printf("%u enclave get signature succeed\n",
+      printf("%lu enclave get signature succeed\n",
              ids[contract.chain_order[i]]);
     } else {
-      printf("%u enclave get signature failed\n", ids[contract.chain_order[i]]);
+      printf("%lu enclave get signature failed\n",
+             ids[contract.chain_order[i]]);
 
       exit(1);
     }

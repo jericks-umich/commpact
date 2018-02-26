@@ -17,6 +17,7 @@ sgx_ec256_public_t *pub_keys = NULL;
 uint8_t num_vehicles = 0;
 sgx_ec256_public_t *ecu_pub_key = NULL;
 int position;
+uint64_t id;
 contract_chain_t enclave_parameters;
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +68,7 @@ sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
   // Copy pub key to the outside
   memcpy(pub, &(key_pair->pub), sizeof(sgx_ec256_public_t));
 
-  ocallECUSetEnclavePubKey(&retval, &(key_pair->pub));
+  ocallECUSetEnclavePubKey(&retval, id, &(key_pair->pub));
   return SGX_SUCCESS;
 }
 
@@ -197,6 +198,10 @@ sgx_status_t newContractChainGetSignatureEnclave(
   return SGX_SUCCESS;
 }
 
+sgx_status_t setEnclaveId(uint64_t enclave_id) {
+  id = enclave_id;
+  return SGX_SUCCESS;
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 // PRIVATE
@@ -254,7 +259,7 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
   retval = 0;
   sgx_ec256_signature_t ecu_signature;
   // Make the ocall
-  ocallECUMessage(&retval, signature, message, &ecu_signature);
+  ocallECUMessage(&retval, id, signature, message, &ecu_signature);
   uint8_t verify_result = SGX_EC_INVALID_SIGNATURE;
   verifyMessageSignature((uint8_t *)message, sizeof(ecu_message_t),
                          &ecu_signature, ecu_pub_key, &verify_result);

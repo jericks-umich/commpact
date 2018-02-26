@@ -31,7 +31,4 @@ retval : commpact_status_t
 */
 commpact_status_t testInitEnclave(uint64_t *e_id);
 
-// TODO test for set position
-
-// TODO test for set initial pub keys
 #endif // COMMPACT_TEST_H

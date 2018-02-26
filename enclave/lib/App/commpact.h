@@ -1,7 +1,8 @@
 #ifndef COMMPACT_H
 #define COMMPACT_H
 
-#define DEFAULT_ENCLAVE_FILENAME "/tmp/enclave.signed.so"
+#define DEFAULT_ENCLAVE_FILENAME                                               \
+  "/home/chshibo/workspace/commpact/enclave/lib/enclave.signed.so"
 
 #define COMMPACT_DEBUG
 

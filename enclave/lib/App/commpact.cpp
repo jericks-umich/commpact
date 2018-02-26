@@ -48,6 +48,9 @@ commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
     return CP_ERROR;
   }
 
+  sgx_status_t retval = SGX_SUCCESS;
+  ret = setEnclaveId(*enclave_id, &retval, *enclave_id);
+
   return CP_SUCCESS;
 }
 

@@ -71,21 +71,119 @@ commpact_status_t testInitEnclave(uint64_t *e_id) {
 }
 
 int main(int argc, char *argv[]) {
-  uint64_t enclave_id = 0;
-  int test_status = 1;
-  cp_ec256_public_t pubkey;
+  // uint64_t enclave_id = 0;
+  // int test_status = 1;
+  // cp_ec256_public_t pubkey;
   // Test Enclave Initiation
-  printf("<------TESTING ENCLAVE INITIATION------>\n");
-  test_status = testInitEnclave(&enclave_id);
-  assert(test_status == CP_SUCCESS);
-  printf("<------ENCLAVE INITIATION SUCCEED!\n");
-  fflush(stdout);
+  // printf("<------TESTING ENCLAVE INITIATION------>\n");
+  // test_status = testInitEnclave(&enclave_id);
+  // assert(test_status == CP_SUCCESS);
+  // printf("<------ENCLAVE INITIATION SUCCEED!\n");
+  // fflush(stdout);
 
   // Test Enclave Generating ecc256 key pair
-  printf("<------TEST GENERATING ECC KEY PAIR----->\n");
-  test_status = testInitializeKeys(enclave_id, &pubkey);
-  assert(test_status == CP_SUCCESS);
-  printf("<------ECC KEY PAIR GENERATED------>\n");
-  fflush(stdout);
+  // printf("<------TEST GENERATING ECC KEY PAIR----->\n");
+  // test_status = testInitializeKeys(enclave_id, &pubkey);
+  // assert(test_status == CP_SUCCESS);
+  // printf("<------ECC KEY PAIR GENERATED------>\n");
+  // fflush(stdout);
+  uint64_t ids[MAX_PLATOON_VEHICLES];
+  cp_ec256_public_t enclave_pub_keys[MAX_PLATOON_VEHICLES];
+  for (unsigned int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    commpact_status_t status = initEnclave(ids + i);
+    if (status == CP_SUCCESS) {
+      printf("%u enclave init succeed\n", ids[i]);
+    } else {
+      printf("%u enclave init failed\n", ids[i]);
+      exit(1);
+    }
+  }
+
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    commpact_status_t status = setInitialPosition(ids[i], i);
+    if (status == CP_SUCCESS) {
+      printf("%u enclave set init position succeed\n", ids[i]);
+    } else {
+      printf("%u enclave set init postion failed\n", ids[i]);
+      exit(1);
+    }
+  }
+
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    commpact_status_t status = initializeKeys(ids[i], enclave_pub_keys + i);
+    if (status == CP_SUCCESS) {
+      printf("%u enclave init key succeed\n", ids[i]);
+    } else {
+      printf("%u enclave init key failed\n", ids[i]);
+      exit(1);
+    }
+  }
+
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    commpact_status_t status = setInitialSpeedBounds(ids[i], 10, 20);
+    if (status == CP_SUCCESS) {
+      printf("%u enclave init speed bounds succeed\n", ids[i]);
+    } else {
+      printf("%u enclave init speed bounds failed\n", ids[i]);
+      exit(1);
+    }
+  }
+
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    commpact_status_t status = setInitialRecoveryPhaseTimeout(ids[i], 10);
+    if (status == CP_SUCCESS) {
+      printf("%u enclave init recovery timeout succeed\n", ids[i]);
+    } else {
+      printf("%u enclave init revovery timeout failed\n", ids[i]);
+      exit(1);
+    }
+  }
+
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    bool verdict = false;
+    commpact_status_t status = checkAllowedSpeed(ids[i], 15, &verdict);
+    if (!verdict || status != CP_SUCCESS) {
+      printf("%u enclave check speed fail\n", ids[i]);
+      exit(1);
+    }
+    status = checkAllowedSpeed(ids[i], 25, &verdict);
+    if (verdict || status != CP_SUCCESS) {
+      printf("%u enclave check speed fail\n", ids[i]);
+      exit(1);
+    }
+    printf("%u enclave check speed succeed\n", ids[i]);
+  }
+
+  contract_chain_t contract;
+  contract.contract_id = 1;
+  contract.seq_num = 1;
+  contract.sent_time = 0;
+  contract.valid_time = 1;
+  contract.recovery_phase_timeout = 3;
+  contract.contract_type = 0x0;
+  contract.chain_length = MAX_PLATOON_VEHICLES + 1;
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    contract.chain_order[i] = i;
+  }
+  contract.chain_order[MAX_PLATOON_VEHICLES] = 0;
+  contract.upper_speed = 22;
+  contract.lower_speed = 12;
+  contract.upper_accel = 3;
+  contract.lower_accel = 2;
+  contract.max_decel = 2;
+  cp_ec256_signature_t signatures[MAX_PLATOON_VEHICLES + 1];
+
+  for (int i = 0; i < MAX_PLATOON_VEHICLES; ++i) {
+    commpact_status_t status = newContractChainGetSignatureCommpact(
+        ids[contract.chain_order[i]], contract, signatures + i, i, signatures);
+    if (status == CP_SUCCESS) {
+      printf("%u enclave get signature succeed\n",
+             ids[contract.chain_order[i]]);
+    } else {
+      printf("%u enclave get signature failed\n", ids[contract.chain_order[i]]);
+
+      exit(1);
+    }
+  }
   return 0;
 }

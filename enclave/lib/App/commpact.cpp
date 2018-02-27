@@ -58,7 +58,6 @@ commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
 // Use this function to set the position of this vehicle in the platoon during
 // the initial setup
 commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
-  printf("Position: %d\n", position);
   // validate position is between 0 and COMMPACT_MAX_ENCLAVES-1
   if (position < 0 or position >= COMMPACT_MAX_ENCLAVES) {
     return CP_INVALID_PARAMETER;
@@ -233,12 +232,9 @@ commpact_status_t newContractChainGetSignatureCommpact(
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
-  printf("commpact: got contract, sending to enclave\n");
   status = newContractChainGetSignatureEnclave(
       enclave_id, &retval, &contract, (sgx_ec256_signature_t *)return_signature,
       (sgx_ec256_signature_t *)signatures, num_signatures);
-  printf("commpact: hopefully got signature from enclave %x\n",
-         *(unsigned int *)return_signature);
   if (status != SGX_SUCCESS) {
     printf("ERROR: newContractChainGetSignature status = 0x%x\n", status);
     return CP_ERROR;
@@ -323,8 +319,10 @@ commpact_status_t signContractHelper(uint64_t enclave_id,
 // ocalls in enclave
 ////////////////////////////////////////////////////////////////////////////////
 int ocallPrints(const char *str) { printf("%s\n", str); }
-
 int ocallPrintD(double dub) { printf("%f\n", dub); }
+int ocallPrintI(int i) { printf("%d\n", i); }
+int ocallPrintU(unsigned int i) { printf("%u\n", i); }
+int ocallPrintX(unsigned int i) { printf("%x\n", i); }
 
 int ocallECUMessage(uint64_t enclave_id,
                     sgx_ec256_signature_t *enclave_signature,

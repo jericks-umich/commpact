@@ -75,6 +75,9 @@ enclave {
 		// This function is used for debugging
 		int ocallPrints([in, string] const char* str);
 		int ocallPrintD(double dub);
+		int ocallPrintI(int i);
+		int ocallPrintU(unsigned int i);
+		int ocallPrintX(unsigned int i);
 
    	};
 };

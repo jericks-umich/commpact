@@ -161,35 +161,24 @@ sgx_status_t newContractChainGetSignatureEnclave(
   uint8_t should_update_ecu = true;
   sgx_status_t status = SGX_SUCCESS;
   memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
-  int retval = 0;
-  char *msg = "enclave: about to call validateSignaturesHelper";
-  ocallPrints(&retval, msg);
   status = validateSignaturesHelper(contract, signatures, num_signatures);
   if (status != SGX_SUCCESS) {
     return status;
   }
-  msg = "enclave: about to call checkParametersHelper";
-  ocallPrints(&retval, msg);
   status = checkParametersHelper(contract, &should_update_ecu);
   if (status != SGX_SUCCESS) {
     return status;
   }
-  msg = "enclave: about to call updateParametersHelper";
-  ocallPrints(&retval, msg);
   status = updateParametersHelper(contract);
   if (status != SGX_SUCCESS) {
     return status;
   }
   if (should_update_ecu) {
-    msg = "enclave: about to call sendECUMessage";
-    ocallPrints(&retval, msg);
     sendECUMessage();
     if (status != SGX_SUCCESS) {
       return status;
     }
   }
-  msg = "enclave: about to call signContractHelper";
-  ocallPrints(&retval, msg);
   status = signContractHelper(contract, return_signature);
   if (status != SGX_SUCCESS) {
     memset(return_signature, 0, sizeof(sgx_ec256_signature_t));
@@ -311,12 +300,31 @@ sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
                                       sgx_ec256_signature_t *signatures,
                                       uint8_t num_signatures) {
   uint8_t result = SGX_EC_INVALID_SIGNATURE;
-  for (uint8_t i = 0; i < num_signatures; ++i) {
+  if (num_signatures == 0) { // if we have no signatures to verify
+    return SGX_SUCCESS;
+  }
+  int retval = 0;
+  for (int i = 0; i < contract->chain_length; ++i) {
+    // i is the position in the chain_order
+    int pos = contract->chain_order[i];
+    if (pos == position) { // if we've reached our own vehicle
+      break;               // then we're done verifying signatures
+    }
+    if (num_signatures < pos) { // sanity check
+      ocallPrintI(&retval, (int)num_signatures);
+      ocallPrintI(&retval, pos);
+      char msg[] = "Not enough signatures provided";
+      ocallPrints(&retval, msg);
+      return SGX_ERROR_UNEXPECTED;
+    }
     verifyMessageSignature((uint8_t *)contract, sizeof(contract_chain_t),
-                           signatures + i, pub_keys + contract->chain_order[i],
-                           &result);
+                           &signatures[pos], &pub_keys[pos], &result);
     if (result != SGX_EC_VALID) {
-      int retval = 0;
+      ocallPrintI(&retval, (int)num_signatures);
+      ocallPrintI(&retval, i);
+      ocallPrintI(&retval, pos);
+      ocallPrintX(&retval, *(unsigned int *)&signatures[pos]);
+      ocallPrintX(&retval, *(unsigned int *)&pub_keys[pos]);
       char msg[] = "Invalid signature";
       ocallPrints(&retval, msg);
       return SGX_ERROR_UNEXPECTED;

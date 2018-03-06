@@ -12,6 +12,7 @@ sgx_status_t sgx_read_rand(unsigned char *rand, size_t length_in_bytes) {
     return SGX_ERROR_UNEXPECTED;
   }
   ssize_t ret = read(rand_handle, rand, length_in_bytes);
+  close(rand_handle);
   if (ret < 0) {
     printf("Error reading from /dev/urandom\n");
     return SGX_ERROR_UNEXPECTED;

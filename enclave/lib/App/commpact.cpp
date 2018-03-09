@@ -17,6 +17,8 @@
 #define INITIAL_SETUP InitialSetup::getInstance()
 #define GET_POSITION InitialSetup::getInstance().getPosition
 
+int sockfd;
+
 // https://software.intel.com/en-us/articles/intel-software-guard-extensions-developing-a-sample-enclave-application
 
 ///////////////////////////
@@ -367,4 +369,30 @@ commpact_status_t setParametersRealECU(int position,
   }
 }
 
+commpact_status_t setupSocket() {
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd == -1) {
+    printf("error opening stream socket");
+    exit(1);
+  }
+
+  sockaddr_in server;
+  server.sin_family = AF_INET;
+
+  hostent *host = gethostbyaddr(SERVER_IP);
+  if (host == nullptr) {
+    printf("%s: unknown host", SERVER_IP);
+    exit(1);
+  }
+  memcpy(&server.sin_addr, host->h_addr, host->h_length);
+
+  server.sin_port = htons(PORT);
+
+  if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {
+    printf("error connecting stream socket");
+    exit(1);
+  }
+
+  return CP_SUCCESS;
+}
 ////////////////////////////////////////////////////////////////////////////////

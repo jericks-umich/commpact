@@ -17,6 +17,8 @@
 #define INITIAL_SETUP InitialSetup::getInstance()
 #define GET_POSITION InitialSetup::getInstance().getPosition
 
+int sockfd;
+
 // https://software.intel.com/en-us/articles/intel-software-guard-extensions-developing-a-sample-enclave-application
 
 ///////////////////////////
@@ -328,14 +330,68 @@ int ocallECUMessage(uint64_t enclave_id,
                     sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,
                     sgx_ec256_signature_t *ecu_signature) {
-  setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
-                   (cp_ec256_signature_t *)enclave_signature, message,
-                   (cp_ec256_signature_t *)ecu_signature);
+  if (USING_REAL_ECU) {
+    setParametersRealECU(INITIAL_SETUP.getPosition(enclave_id),
+                         (cp_ec256_signature_t *)enclave_signature, message,
+                         (cp_ec256_signature_t *)ecu_signature);
+  } else {
+    setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
+                     (cp_ec256_signature_t *)enclave_signature, message,
+                     (cp_ec256_signature_t *)ecu_signature);
+  }
 }
 
 int ocallECUSetEnclavePubKey(uint64_t enclave_id,
                              sgx_ec256_public_t *enclave_pub_key) {
   setEnclavePubKey(INITIAL_SETUP.getPosition(enclave_id),
                    (cp_ec256_public_t *)enclave_pub_key);
+}
+
+commpact_status_t setParametersRealECU(int position,
+                                       cp_ec256_signature_t *enclave_signature,
+                                       ecu_message_t *message,
+                                       cp_ec256_signature_t *ecu_signature) {
+  uint64_t msg_len =
+      1 + sizeof(int) + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
+  char buf[msg_len];
+  memset(buf, 0, msg_len);
+  // clang-format off
+  // MSG should look like: msg_type | vehicle position | message               |enclave_signature
+  //                       1 byte   | sizeof (int)     | sizeof(ecu_message_t) |sizeof(cp_ec256_signature_t)
+  // clang-format on
+  buf[0] = 0x0;
+  memcpy(buf + 1, &position, sizeof(int));
+  memcpy(buf + 1 + sizeof(int), message, sizeof(ecu_message_t));
+  memcpy(buf + 1 + sizeof(int) + sizeof(ecu_message_t), enclave_signature,
+         sizeof(enclave_signature));
+  if (send(sockfd, buf, msg_len, 0) == -1) {
+    printf("error sending ecu message to real ecu\n");
+  }
+
+  memset(ecu_signature, 0, sizeof(cp_ec256_signature_t));
+  if (recv(sockfd, ecu_signature, sizeof(cp_ec256_signature_t), 0) == -1) {
+    printf("error receiving ecu signature\n");
+  }
+}
+
+commpact_status_t setupSocket() {
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd == -1) {
+    printf("error opening stream socket");
+    exit(1);
+  }
+
+  sockaddr_in server;
+  server.sin_family = AF_INET;
+
+  inet_pton(AF_INET, SERVER_IP, &(server.sin_addr));
+  server.sin_port = htons(PORT);
+
+  if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {
+    printf("error connecting stream socket");
+    exit(1);
+  }
+
+  return CP_SUCCESS;
 }
 ////////////////////////////////////////////////////////////////////////////////

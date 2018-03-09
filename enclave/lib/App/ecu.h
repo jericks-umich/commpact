@@ -7,6 +7,17 @@
 #include "../include/commpact_types.h"
 #include "../include/ecu_types.h"
 
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define USING_REAL_ECU 1
+#define PORT 9999
+#define SERVER_IP "192.168.0.2"
+
 typedef struct _ecu_t {
   ecu_message_t ecu_parameters;
   cp_ec256_public_t enclave_pub_key;

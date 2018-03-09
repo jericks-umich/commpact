@@ -3,6 +3,8 @@
 
 #include "sgx_tcrypto.h"
 
+#include <stdlib.h>
+
 ///////////////////////
 // GLOBAL PARAMETERS //
 ///////////////////////

@@ -17,6 +17,8 @@
 #define INITIAL_SETUP InitialSetup::getInstance()
 #define GET_POSITION InitialSetup::getInstance().getPosition
 
+int sockfd;
+
 // https://software.intel.com/en-us/articles/intel-software-guard-extensions-developing-a-sample-enclave-application
 
 ///////////////////////////
@@ -328,14 +330,49 @@ int ocallECUMessage(uint64_t enclave_id,
                     sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,
                     sgx_ec256_signature_t *ecu_signature) {
-  setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
-                   (cp_ec256_signature_t *)enclave_signature, message,
-                   (cp_ec256_signature_t *)ecu_signature);
+  if (USING_REAL_ECU) {
+    setParametersRealECU(INITIAL_SETUP.getPosition(enclave_id),
+                         (cp_ec256_signature_t *)enclave_signature, message,
+                         (cp_ec256_signature_t *)ecu_signature);
+  } else {
+    setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
+                     (cp_ec256_signature_t *)enclave_signature, message,
+                     (cp_ec256_signature_t *)ecu_signature);
+  }
 }
 
 int ocallECUSetEnclavePubKey(uint64_t enclave_id,
                              sgx_ec256_public_t *enclave_pub_key) {
   setEnclavePubKey(INITIAL_SETUP.getPosition(enclave_id),
                    (cp_ec256_public_t *)enclave_pub_key);
+}
+
+void setParametersRealECU() {}
+
+commpact_status_t setupSocket() {
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd == -1) {
+    printf("error opening stream socket");
+    exit(1);
+  }
+
+  sockaddr_in server;
+  server.sin_family = AF_INET;
+
+  hostent *host = gethostbyaddr(SERVER_IP);
+  if (host == nullptr) {
+    printf("%s: unknown host", SERVER_IP);
+    exit(1);
+  }
+  memcpy(&server.sin_addr, host->h_addr, host->h_length);
+
+  server.sin_port = htons(PORT);
+
+  if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {
+    printf("error connecting stream socket");
+    exit(1);
+  }
+
+  return CP_SUCCESS;
 }
 ////////////////////////////////////////////////////////////////////////////////

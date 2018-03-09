@@ -4,6 +4,9 @@
 #define DEFAULT_ENCLAVE_FILENAME "/tmp/enclave.signed.so"
 
 #define COMMPACT_DEBUG
+#define USING_REAL_ECU 1
+#define PORT 9999
+#define SERVER_IP 192.168.0.2
 
 #include "../include/commpact_types.h"
 
@@ -29,6 +32,7 @@ commpact_status_t newContractChainGetSignatureCommpact(
     uint64_t enclave_id, contract_chain_t contract,
     cp_ec256_signature_t *return_signature, uint8_t num_signatures,
     cp_ec256_signature_t *signatures);
+commpact_status_t setupSocket();
 ////////////////////////////////////////////////////////////////////////////////
 
 // private (static) functions

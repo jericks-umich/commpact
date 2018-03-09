@@ -379,13 +379,7 @@ commpact_status_t setupSocket() {
   sockaddr_in server;
   server.sin_family = AF_INET;
 
-  hostent *host = gethostbyaddr(SERVER_IP);
-  if (host == nullptr) {
-    printf("%s: unknown host", SERVER_IP);
-    exit(1);
-  }
-  memcpy(&server.sin_addr, host->h_addr, host->h_length);
-
+  inet_pton(AF_INET, SERVER_IP, &(server.sin_addr));
   server.sin_port = htons(PORT);
 
   if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {

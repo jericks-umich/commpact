@@ -5,10 +5,12 @@
 #define COMMPACT_DEBUG
 #define USING_REAL_ECU 1
 #define PORT 9999
-#define SERVER_IP 192.168.0.2
+#define SERVER_IP "192.168.0.2"
 
 #include "../include/commpact_types.h"
+#include "../include/ecu_types.h"
 
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -37,14 +39,17 @@ commpact_status_t newContractChainGetSignatureCommpact(
     uint64_t enclave_id, contract_chain_t contract,
     cp_ec256_signature_t *return_signature, uint8_t num_signatures,
     cp_ec256_signature_t *signatures);
-commpact_status_t setupSocket();
 ////////////////////////////////////////////////////////////////////////////////
 
 // private (static) functions
+////////////////////////////////////////////////////////////////////////////////
 commpact_status_t setParametersRealECU(int position,
                                        cp_ec256_signature_t *enclave_signature,
                                        ecu_message_t *message,
                                        cp_ec256_signature_t *ecu_signature);
+commpact_status_t setupSocket();
+////////////////////////////////////////////////////////////////////////////////
+
 // debug functions
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef COMMPACT_DEBUG

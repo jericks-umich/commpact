@@ -138,7 +138,7 @@ commpact_status_t setParametersRealECU(int position,
 }
 
 commpact_status_t setupSocket() {
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1) {
     printf("error opening stream socket");
     exit(1);

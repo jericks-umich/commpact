@@ -9,6 +9,12 @@
 
 #include "../include/commpact_types.h"
 
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

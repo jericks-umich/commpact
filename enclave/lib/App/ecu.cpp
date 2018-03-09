@@ -3,6 +3,8 @@
 
 #include "sgx_tcrypto.h"
 
+#include <stdlib.h>
+
 ///////////////////////
 // GLOBAL PARAMETERS //
 ///////////////////////
@@ -154,7 +156,7 @@ commpact_status_t setParametersRealECU(int position,
 }
 
 commpact_status_t setupSocket() {
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1) {
     printf("error opening stream socket");
     exit(1);
@@ -175,7 +177,7 @@ commpact_status_t setupSocket() {
 }
 
 commpact_status_t getRealECUPubKey(int position, cp_ec256_public_t *pub_key) {
-  if (recv(sockfd, pub_key, sizeof, 0)) {
+  if (recv(sockfd, pub_key, sizeof(cp_ec256_public_t), 0)) {
     printf("error connecting stream socket");
     exit(1);
   }

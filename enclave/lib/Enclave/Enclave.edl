@@ -2,7 +2,7 @@ enclave {
 	include "sgx_tcrypto.h"
 	include "sgx_error.h"
 	include "stdbool.h"
-	include "../App/commpact.h"
+	//include "../App/commpact.h"
 	include "../include/commpact_types.h"
 	include "../include/ecu_types.h"
 

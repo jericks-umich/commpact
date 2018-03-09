@@ -22,4 +22,9 @@ commpact_status_t setParametersECU(int position,
 commpact_status_t generateKeyPair(int position, cp_ec256_public_t *pub_key);
 commpact_status_t signMessage(ecu_t *ecu, ecu_message_t *message,
                               cp_ec256_signature_t *signature);
+commpact_status_t setParametersRealECU(int position,
+                                       cp_ec256_signature_t *enclave_signature,
+                                       ecu_message_t *message,
+                                       cp_ec256_signature_t *ecu_signature);
+commpact_status_t setupSocket();
 #endif /* ECU_H */

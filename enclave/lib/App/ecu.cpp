@@ -6,7 +6,7 @@
 ///////////////////////
 // GLOBAL PARAMETERS //
 ///////////////////////
-
+int sockfd;
 // ecu_message_t ecu_parameters;
 // cp_ec256_public_t enclave_pub_key;
 // cp_ec256_private_t ecu_priv_key;
@@ -103,6 +103,54 @@ commpact_status_t signMessage(ecu_t *ecu, ecu_message_t *message,
   if (status != SGX_SUCCESS) {
     printf("ERROR: close ecc256 context failed");
     return CP_ERROR;
+  }
+
+  return CP_SUCCESS;
+}
+
+commpact_status_t setParametersRealECU(int position,
+                                       cp_ec256_signature_t *enclave_signature,
+                                       ecu_message_t *message,
+                                       cp_ec256_signature_t *ecu_signature) {
+  uint64_t msg_len =
+      1 + sizeof(int) + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
+  char buf[msg_len];
+  memset(buf, 0, msg_len);
+  // clang-format off
+          // MSG should look like: msg_type | vehicle position | message               |enclave_signature
+          //                       1 byte   | sizeof (int)     | sizeof(ecu_message_t) |sizeof(cp_ec256_signature_t)
+  // clang-format on
+  buf[0] = 0x0;
+  memcpy(buf + 1, &position, sizeof(int));
+  memcpy(buf + 1 + sizeof(int), message, sizeof(ecu_message_t));
+  memcpy(buf + 1 + sizeof(int) + sizeof(ecu_message_t), enclave_signature,
+         sizeof(enclave_signature));
+  if (send(sockfd, buf, msg_len, 0) == -1) {
+    printf("error sending ecu message to real ecu\n");
+  }
+
+  memset(ecu_signature, 0, sizeof(cp_ec256_signature_t));
+  if (recv(sockfd, ecu_signature, sizeof(cp_ec256_signature_t), 0) == -1) {
+    printf("error receiving ecu signature\n");
+  }
+}
+
+commpact_status_t setupSocket() {
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd == -1) {
+    printf("error opening stream socket");
+    exit(1);
+  }
+
+  sockaddr_in server;
+  server.sin_family = AF_INET;
+
+  inet_pton(AF_INET, SERVER_IP, &(server.sin_addr));
+  server.sin_port = htons(PORT);
+
+  if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {
+    printf("error connecting stream socket");
+    exit(1);
   }
 
   return CP_SUCCESS;

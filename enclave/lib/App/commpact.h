@@ -2,8 +2,9 @@
 #define COMMPACT_H
 
 #define DEFAULT_ENCLAVE_FILENAME "/tmp/enclave.signed.so"
-
 #define COMMPACT_DEBUG
+#define USING_REAL_ECU 1
+#define PORT 9999
 
 #include "../include/commpact_types.h"
 
@@ -32,7 +33,10 @@ commpact_status_t newContractChainGetSignatureCommpact(
 ////////////////////////////////////////////////////////////////////////////////
 
 // private (static) functions
-
+commpact_status_t setParametersRealECU(int position,
+                                       cp_ec256_signature_t *enclave_signature,
+                                       ecu_message_t *message,
+                                       cp_ec256_signature_t *ecu_signature);
 // debug functions
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef COMMPACT_DEBUG

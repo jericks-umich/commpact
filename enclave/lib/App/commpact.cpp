@@ -328,9 +328,15 @@ int ocallECUMessage(uint64_t enclave_id,
                     sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,
                     sgx_ec256_signature_t *ecu_signature) {
-  setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
-                   (cp_ec256_signature_t *)enclave_signature, message,
-                   (cp_ec256_signature_t *)ecu_signature);
+  if (USING_REAL_ECU) {
+    setParametersRealECU(INITIAL_SETUP.getPosition(enclave_id),
+                         (cp_ec256_signature_t *)enclave_signature, message,
+                         (cp_ec256_signature_t *)ecu_signature);
+  } else {
+    setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
+                     (cp_ec256_signature_t *)enclave_signature, message,
+                     (cp_ec256_signature_t *)ecu_signature);
+  }
 }
 
 int ocallECUSetEnclavePubKey(uint64_t enclave_id,
@@ -338,4 +344,27 @@ int ocallECUSetEnclavePubKey(uint64_t enclave_id,
   setEnclavePubKey(INITIAL_SETUP.getPosition(enclave_id),
                    (cp_ec256_public_t *)enclave_pub_key);
 }
+
+commpact_status_t setParametersRealECU(int position,
+                                       cp_ec256_signature_t *enclave_signature,
+                                       ecu_message_t *message,
+                                       cp_ec256_signature_t *ecu_signature) {
+  uint64_t msg_len =
+      1 + sizeof(int) + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
+  char buf[msg_len];
+  memset(buf, 0, msg_len);
+  // MSG should look like: msg_type | vehicle position | message               |
+  // enclave_signature
+  //                       1 byte  | sizeof (int)     | sizeof(ecu_message_t) |
+  //                       sizeof(cp_ec256_signature_t)
+  buf[0] = 0x0;
+  memcpy(buf + 1, &position, sizeof(int));
+  memcpy(buf + 1 + sizeof(int), message, sizeof(ecu_message_t));
+  memcpy(buf + 1 + sizeof(int) + sizeof(ecu_message_t), enclave_signature,
+         sizeof(enclave_signature));
+  if (send(sockfd, buf, msg_len, 0) == -1) {
+    cerr << "error sending ecu message to real ecu" << endl;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////

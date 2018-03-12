@@ -25,12 +25,16 @@ commpact_status_t setEnclavePubKey(int position, cp_ec256_public_t *pub_key) {
 }
 commpact_status_t setEnclavePubKeyRealECU(int position,
                                           cp_ec256_public_t *pub_key) {
-  uint64_t msg_len = 1 + sizeof(int) + sizeof(cp_ec256_public_t);
+  // clang-format off
+  // msg type | position | public_key
+  // one byte | one byte | sizeof(cp_ec256_public_t)
+  // clang-format on
+  uint64_t msg_len = 2 + +sizeof(cp_ec256_public_t);
   char buf[msg_len];
   memset(buf, 0, msg_len);
   buf[0] = ECU_SOCK_PUB_KEY_TYPE;
-  memcpy(buf + 1, &position, sizeof(int));
-  memcpy(buf + 1 + sizeof(int), pub_key, sizeof(cp_ec256_public_t));
+  buf[1] = (uint8_t)position;
+  memcpy(buf + 2, pub_key, sizeof(cp_ec256_public_t));
   if (send(sockfd, buf, msg_len, 0) == -1) {
     printf("error sending ecu message to real ecu\n");
     return CP_ERROR;
@@ -129,18 +133,17 @@ commpact_status_t setParametersRealECU(int position,
                                        cp_ec256_signature_t *enclave_signature,
                                        ecu_message_t *message,
                                        cp_ec256_signature_t *ecu_signature) {
-  uint64_t msg_len =
-      1 + sizeof(int) + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
+  uint64_t msg_len = 2 + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
   char buf[msg_len];
   memset(buf, 0, msg_len);
   // clang-format off
           // MSG should look like: msg_type | vehicle position | message               |enclave_signature
-          //                       1 byte   | sizeof (int)     | sizeof(ecu_message_t) |sizeof(cp_ec256_signature_t)
+          //                       1 byte   | byte             | sizeof(ecu_message_t) |sizeof(cp_ec256_signature_t)
   // clang-format on
   buf[0] = ECU_SOCK_MSG_TYPE;
-  memcpy(buf + 1, &position, sizeof(int));
-  memcpy(buf + 1 + sizeof(int), message, sizeof(ecu_message_t));
-  memcpy(buf + 1 + sizeof(int) + sizeof(ecu_message_t), enclave_signature,
+  buf[1] = (uint8_t)position;
+  memcpy(buf + 2, message, sizeof(ecu_message_t));
+  memcpy(buf + 2 + sizeof(ecu_message_t), enclave_signature,
          sizeof(enclave_signature));
   if (send(sockfd, buf, msg_len, 0) == -1) {
     printf("error sending ecu message to real ecu\n");

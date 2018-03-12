@@ -57,16 +57,16 @@ commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
 // This position in the platoon is set when the vehicle is initialized.
 // Use this function to set the position of this vehicle in the platoon during
 // the initial setup
-commpact_status_t setInitialPosition(uint64_t enclave_id, int position) {
+commpact_status_t setInitialPosition(uint64_t enclave_id, uint8_t position) {
   // validate position is between 0 and COMMPACT_MAX_ENCLAVES-1
-  if (position < 0 or position >= COMMPACT_MAX_ENCLAVES) {
+  if (position >= COMMPACT_MAX_ENCLAVES) {
     return CP_INVALID_PARAMETER;
   }
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
   status = setPosition(enclave_id, &retval, position);
   if (status != SGX_SUCCESS) {
-    printf("failed set position: enclave : %lu, position : %d\n", enclave_id,
+    printf("failed set position: enclave : %lu, position : %u\n", enclave_id,
            position);
     return CP_ERROR;
   }
@@ -128,8 +128,8 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
 
   // Part of InitialSetup hack
   // record the enclave_id for this vehicle
-  int position = GET_POSITION(enclave_id);
-  if (position != -1) {
+  uint8_t position = GET_POSITION(enclave_id);
+  if (position != 255) {
     memcpy(&INITIAL_SETUP.pubkey_list[position], pubkey,
            sizeof(cp_ec256_public_t));
   }

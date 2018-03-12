@@ -25,7 +25,7 @@ public:
   InitialSetup(InitialSetup &&) = delete;
   void operator=(InitialSetup const &) = delete;
 
-  int getPosition(uint64_t enclave_id) {
+  uint8_t getPosition(uint64_t enclave_id) {
     for (int i = 0; i < COMMPACT_MAX_ENCLAVES; i++) {
       if (enclave_id_list[i] == enclave_id) {
         return i;

@@ -19,7 +19,7 @@ enclave {
 		
 		//This is the function to set vehicle's position
 		//It returns the signature of this position
-		public sgx_status_t setPosition(int pos);
+		public sgx_status_t setPosition(uint8_t pos);
 	
 		//This is the function to set all pubkeys of vehicles in the platoon
 		//It takes 2 parameters
@@ -49,7 +49,7 @@ enclave {
 		****************/
 		#ifdef COMMPACT_DEBUG
 		// Get position of the enclave
-		public sgx_status_t getPosition([out] int* pos);
+		public sgx_status_t getPosition([out] uint8_t* pos);
 
 		public sgx_status_t validateSignatures([in]contract_chain_t *contract,
 					[in,count= num_signatures]sgx_ec256_signature_t *signatures,uint8_t num_signatures);

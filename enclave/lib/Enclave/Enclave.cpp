@@ -16,7 +16,7 @@ ec256_key_pair_t *key_pair = NULL; // Global EC256 cache
 sgx_ec256_public_t *pub_keys = NULL;
 uint8_t num_vehicles = 0;
 sgx_ec256_public_t *ecu_pub_key = NULL;
-int position;
+uint8_t position;
 uint64_t id;
 contract_chain_t enclave_parameters;
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
 
 // This is the function to set vehicle's position
 // It returns signature of this flag|data
-sgx_status_t setPosition(int pos) {
+sgx_status_t setPosition(uint8_t pos) {
 
   position = pos;
   // memcpy(&position, pos, sizeof(int));
@@ -306,7 +306,7 @@ sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
   int retval = 0;
   for (int i = 0; i < contract->chain_length; ++i) {
     // i is the position in the chain_order
-    int pos = contract->chain_order[i];
+    uint8_t pos = contract->chain_order[i];
     if (pos == position) { // if we've reached our own vehicle
       break;               // then we're done verifying signatures
     }
@@ -471,7 +471,7 @@ sgx_status_t enclave_status() {
 }
 
 // Get position of the enclave
-sgx_status_t getPosition(int *pos) {
+sgx_status_t getPosition(uint8_t *pos) {
   memcpy(pos, &position, sizeof(int));
   return SGX_SUCCESS;
 }

@@ -18,22 +18,23 @@ int sockfd;
 // std::unordered_map<uint64_t, ecu_t> ecus;
 ecu_t ecus[COMMPACT_MAX_ENCLAVES];
 
-commpact_status_t setEnclavePubKey(int position, cp_ec256_public_t *pub_key) {
+commpact_status_t setEnclavePubKey(uint8_t position,
+                                   cp_ec256_public_t *pub_key) {
   ecu_t *ecu = &ecus[position];
   memcpy(&(ecu->enclave_pub_key), pub_key, sizeof(cp_ec256_public_t));
   return CP_SUCCESS;
 }
-commpact_status_t setEnclavePubKeyRealECU(int position,
+commpact_status_t setEnclavePubKeyRealECU(uint8_t position,
                                           cp_ec256_public_t *pub_key) {
   // clang-format off
   // msg type | position | public_key
   // one byte | one byte | sizeof(cp_ec256_public_t)
   // clang-format on
   uint64_t msg_len = 2 + +sizeof(cp_ec256_public_t);
-  char buf[msg_len];
+  uint8_t buf[msg_len];
   memset(buf, 0, msg_len);
   buf[0] = ECU_SOCK_PUB_KEY_TYPE;
-  buf[1] = (uint8_t)position;
+  buf[1] = position;
   memcpy(buf + 2, pub_key, sizeof(cp_ec256_public_t));
   if (send(sockfd, buf, msg_len, 0) == -1) {
     printf("error sending ecu message to real ecu\n");
@@ -43,7 +44,7 @@ commpact_status_t setEnclavePubKeyRealECU(int position,
   return CP_SUCCESS;
 }
 
-commpact_status_t setParametersECU(int position,
+commpact_status_t setParametersECU(uint8_t position,
                                    cp_ec256_signature_t *enclave_signature,
                                    ecu_message_t *message,
                                    cp_ec256_signature_t *ecu_signature) {
@@ -68,7 +69,8 @@ commpact_status_t setParametersECU(int position,
   return CP_SUCCESS;
 }
 
-commpact_status_t generateKeyPair(int position, cp_ec256_public_t *pub_key) {
+commpact_status_t generateKeyPair(uint8_t position,
+                                  cp_ec256_public_t *pub_key) {
 
   int retval = 0;
   sgx_status_t status = SGX_SUCCESS;
@@ -129,19 +131,19 @@ commpact_status_t signMessage(ecu_t *ecu, ecu_message_t *message,
   return CP_SUCCESS;
 }
 
-commpact_status_t setParametersRealECU(int position,
+commpact_status_t setParametersRealECU(uint8_t position,
                                        cp_ec256_signature_t *enclave_signature,
                                        ecu_message_t *message,
                                        cp_ec256_signature_t *ecu_signature) {
   uint64_t msg_len = 2 + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
-  char buf[msg_len];
+  uint8_t buf[msg_len];
   memset(buf, 0, msg_len);
   // clang-format off
           // MSG should look like: msg_type | vehicle position | message               |enclave_signature
           //                       1 byte   | byte             | sizeof(ecu_message_t) |sizeof(cp_ec256_signature_t)
   // clang-format on
   buf[0] = ECU_SOCK_MSG_TYPE;
-  buf[1] = (uint8_t)position;
+  buf[1] = position;
   memcpy(buf + 2, message, sizeof(ecu_message_t));
   memcpy(buf + 2 + sizeof(ecu_message_t), enclave_signature,
          sizeof(enclave_signature));
@@ -179,7 +181,8 @@ commpact_status_t setupSocket() {
   return CP_SUCCESS;
 }
 
-commpact_status_t getRealECUPubKey(int position, cp_ec256_public_t *pub_key) {
+commpact_status_t getRealECUPubKey(uint8_t position,
+                                   cp_ec256_public_t *pub_key) {
   if (recv(sockfd, pub_key, sizeof(cp_ec256_public_t), 0)) {
     printf("error connecting stream socket");
     exit(1);

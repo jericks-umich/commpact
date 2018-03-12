@@ -16,7 +16,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define USING_REAL_ECU 1
 #define PORT 9999
 #define SERVER_IP "192.168.0.2"
 

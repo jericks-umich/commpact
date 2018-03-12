@@ -8,7 +8,6 @@
 #define SERVER_IP "192.168.0.2"
 
 #include "../include/commpact_types.h"
-#include "../include/ecu_types.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -346,8 +346,8 @@ int ocallECUMessage(uint64_t enclave_id,
 int ocallECUSetEnclavePubKey(uint64_t enclave_id,
                              sgx_ec256_public_t *enclave_pub_key) {
   if (USING_REAL_ECU) {
-    /*setEnclavePubKeyRealECU(INITIAL_SETUP.getPosition(enclave_id),
-                            (cp_ec256_public_t *)enclave_pub_key);*/
+    setEnclavePubKeyRealECU(INITIAL_SETUP.getPosition(enclave_id),
+                            (cp_ec256_public_t *)enclave_pub_key);
   } else {
     setEnclavePubKey(INITIAL_SETUP.getPosition(enclave_id),
                      (cp_ec256_public_t *)enclave_pub_key);

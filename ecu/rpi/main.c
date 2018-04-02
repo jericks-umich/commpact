@@ -8,9 +8,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "commpact_types.h"
+#include "ecu_types.h"
+
 #define IPADDR "127.0.0.1"
 #define PORT 9999
 #define BUF_SIZE 256
+#define MAX_VEHICLES 8
+
+#define MODE_SETUP 0
+#define MODE_RUNNING 1
 
 // This program serves as an emulated ECU in our simulation.
 // It will be run on a Raspberry Pi, connected to our simulation server via
@@ -27,10 +34,45 @@
 // these
 // signatures, then sign the message itself and return the new signature.
 
+cp_ec256_private_t priv_keypair[MAX_VEHICLES];
+cp_ec256_public_t pub_keypair[MAX_VEHICLES];
+cp_ec256_public_t pubkeys[MAX_VEHICLES];
+int mode; // either setup or running
+
+// parses the supplied buffer and sets the buffer to the value that should be returned
+void parse(uint8_t* buf, int *nbytes) {
+	uint8_t type, position;
+	type = buf[0];
+	position = buf[1];
+
+	if (position > MAX_VEHICLES - 1) { // if position is invalid
+		printf("invalid vehicle position\n");
+		*nbytes = BUF_SIZE;
+		memcpy(buf, 0, *nbytes);
+		return;
+	}
+
+
+	if (type == 1) { // pubkey type
+	}
+	else if (type == 0) { // message type
+	}
+	else {
+		printf("invalid type\n");
+		*nbytes = BUF_SIZE;
+		memcpy(buf, 0, *nbytes);
+		return;
+	}
+
+}
+
+
 int main() {
   struct sockaddr_in addr, cli_addr;
   int listenfd, connfd, clilen, nbytes;
   uint8_t buf[BUF_SIZE];
+
+	// set
 
   // set up listening socket
   listenfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -47,6 +89,8 @@ int main() {
   }
   listen(listenfd, 1);
 
+	while (1) {
+
   // handle an incoming packet
   clilen = sizeof(cli_addr);
 	nbytes = recvfrom(listenfd, buf, BUF_SIZE, 0, (struct sockaddr*) &cli_addr, &clilen);
@@ -56,6 +100,7 @@ int main() {
   }
 
   // parse data
+	parse(buf, &nbytes);
 
   // return result
   nbytes = sendto(listenfd, buf, nbytes, 0, (struct sockaddr*) &cli_addr, clilen);
@@ -63,4 +108,5 @@ int main() {
     printf("error writing data\n");
     return -5;
   }
+	}
 }

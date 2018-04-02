@@ -47,16 +47,9 @@ int main() {
   }
   listen(listenfd, 1);
 
-  // handle a client connection
+  // handle an incoming packet
   clilen = sizeof(cli_addr);
-  connfd = accept(listenfd, (struct sockaddr *)&cli_addr, &clilen);
-  if (connfd < 0) {
-    printf("couldn't open connection socket\n");
-    return -2;
-  }
-
-  // read data
-  nbytes = read(connfd, buf, BUF_SIZE - 1);
+	nbytes = recvfrom(listenfd, buf, BUF_SIZE, 0, (struct sockaddr*) &cli_addr, &clilen);
   if (nbytes < 0) {
     printf("error reading data\n");
     return -3;
@@ -65,7 +58,7 @@ int main() {
   // parse data
 
   // return result
-  nbytes = write(connfd, buf, nbytes);
+  nbytes = sendto(listenfd, buf, nbytes, 0, (struct sockaddr*) &cli_addr, clilen);
   if (nbytes < 0) {
     printf("error writing data\n");
     return -5;

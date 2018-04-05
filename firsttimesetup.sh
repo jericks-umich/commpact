@@ -16,17 +16,9 @@ echo "==============================================="
 sudo apt-get install -y build-essential gcc g++ bison flex perl qt5-default \
 	tcl-dev tk-dev libxml2-dev zlib1g-dev default-jre doxygen graphviz \
 	libwebkitgtk-3.0-0 openjdk-6-jre autoconf libtool libproj-dev libgdal-dev \
-	libfox-1.6-dev libxerces-c-dev r-base libqt4-dev 
+	libfox-1.6-dev libxerces-c-dev r-base libqt4-dev libssl-dev
 #TODO add the rest
 # For SUMO
-
-echo "======================="
-echo "= Building Enclave... ="
-echo "======================="
-# compile enclave code
-pushd $THIS_DIR/enclave/lib
-make
-popd
 
 echo "===================================================="
 echo "= Creating necessary symlinks for building SUMO... ="
@@ -35,15 +27,23 @@ echo "===================================================="
 mkdir -p $THIS_DIR/include
 ln -s $THIS_DIR/enclave/lib/App/commpact.h $THIS_DIR/include/
 ln -s $THIS_DIR/enclave/lib/include/commpact_types.h $THIS_DIR/include/
-ln -s /opt/intel/sgxsdk/lib64/libsgx_tcrypto.a $THIS_DIR/lib/
 
 # symlink the .so files we need into the lib directory
 mkdir -p $THIS_DIR/lib
 ln -s $THIS_DIR/enclave/lib/libcommpact.so.1 $THIS_DIR/lib
 ln -s $THIS_DIR/enclave/lib/libcommpact.so.1 $THIS_DIR/lib/libcommpact.so
+ln -s /opt/intel/sgxsdk/lib64/libsgx_tcrypto.a $THIS_DIR/lib/
 
 # symlink the enclave .so to /tmp
 ln -s $THIS_DIR/enclave/lib/enclave.signed.so /tmp/
+
+echo "======================="
+echo "= Building Enclave... ="
+echo "======================="
+# compile enclave code
+pushd $THIS_DIR/enclave/lib
+make
+popd
 
 # download OMNeT++
 pushd $THIS_DIR

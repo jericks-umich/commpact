@@ -9,6 +9,8 @@
 // GLOBAL PARAMETERS //
 ///////////////////////
 int sockfd;
+sockaddr_in addr;
+unsigned int addr_len;
 // ecu_message_t ecu_parameters;
 // cp_ec256_public_t enclave_pub_key;
 // cp_ec256_private_t ecu_priv_key;
@@ -18,26 +20,43 @@ int sockfd;
 // std::unordered_map<uint64_t, ecu_t> ecus;
 ecu_t ecus[COMMPACT_MAX_ENCLAVES];
 
-commpact_status_t setEnclavePubKey(uint8_t position,
-                                   cp_ec256_public_t *pub_key) {
+commpact_status_t setGetEnclavePubKey(uint8_t position,
+                                      cp_ec256_public_t *enclave_pub_key,
+                                      cp_ec256_public_t *ecu_pub_key) {
+  // set enclave's pubkey in ecu
   ecu_t *ecu = &ecus[position];
-  memcpy(&(ecu->enclave_pub_key), pub_key, sizeof(cp_ec256_public_t));
+  memcpy(&(ecu->enclave_pub_key), enclave_pub_key, sizeof(cp_ec256_public_t));
+
+  // generate ecu keys and set ecu's pubkey in enclave
+  generateKeyPair(position, ecu_pub_key);
+
   return CP_SUCCESS;
 }
-commpact_status_t setEnclavePubKeyRealECU(uint8_t position,
-                                          cp_ec256_public_t *pub_key) {
+
+commpact_status_t setGetEnclavePubKeyRealECU(uint8_t position,
+                                             cp_ec256_public_t *enclave_pub_key,
+                                             cp_ec256_public_t *ecu_pub_key) {
   // clang-format off
   // msg type | position | public_key
   // one byte | one byte | sizeof(cp_ec256_public_t)
   // clang-format on
   uint64_t msg_len = 2 + +sizeof(cp_ec256_public_t);
   uint8_t buf[msg_len];
+  int nbytes;
   memset(buf, 0, msg_len);
   buf[0] = ECU_SOCK_PUB_KEY_TYPE;
   buf[1] = position;
-  memcpy(buf + 2, pub_key, sizeof(cp_ec256_public_t));
-  if (send(sockfd, buf, msg_len, 0) == -1) {
-    printf("error sending ecu message to real ecu\n");
+  memcpy(buf + 2, enclave_pub_key, sizeof(cp_ec256_public_t));
+  nbytes = sendto(sockfd, buf, msg_len, 0, (struct sockaddr *)&addr, addr_len);
+  if (nbytes < (2 + sizeof(cp_ec256_public_t))) {
+    printf("error sending ecu pubkey to real ecu\n");
+    return CP_ERROR;
+  }
+
+  nbytes = recvfrom(sockfd, ecu_pub_key, sizeof(cp_ec256_public_t), 0,
+                    (struct sockaddr *)&addr, &addr_len);
+  if (nbytes < sizeof(cp_ec256_public_t)) {
+    printf("error receiving pubkey from udp socket");
     return CP_ERROR;
   }
 
@@ -137,6 +156,17 @@ commpact_status_t setParametersRealECU(uint8_t position,
                                        cp_ec256_signature_t *ecu_signature) {
   uint64_t msg_len = 2 + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
   uint8_t buf[msg_len];
+  int nbytes;
+  // printf("sending enclave message: ");
+  // for (int i = 0; i < sizeof(ecu_message_t); i++) {
+  //  printf("%02x", ((uint8_t *)message)[i]);
+  //}
+  // printf("\n");
+  // printf("sending enclave signature: ");
+  // for (int i = 0; i < sizeof(cp_ec256_signature_t); i++) {
+  //  printf("%02x", ((uint8_t *)enclave_signature)[i]);
+  //}
+  printf("\n");
   memset(buf, 0, msg_len);
   // clang-format off
           // MSG should look like: msg_type | vehicle position | message               |enclave_signature
@@ -146,14 +176,22 @@ commpact_status_t setParametersRealECU(uint8_t position,
   buf[1] = position;
   memcpy(buf + 2, message, sizeof(ecu_message_t));
   memcpy(buf + 2 + sizeof(ecu_message_t), enclave_signature,
-         sizeof(enclave_signature));
-  if (send(sockfd, buf, msg_len, 0) == -1) {
+         sizeof(cp_ec256_signature_t));
+  // printf("sending message: ");
+  // for (int i = 0; i < msg_len; i++) {
+  //  printf("%02x", buf[i]);
+  //}
+  // printf("\n");
+  nbytes = sendto(sockfd, buf, msg_len, 0, (struct sockaddr *)&addr, addr_len);
+  if (nbytes < (2 + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t))) {
     printf("error sending ecu message to real ecu\n");
     return CP_ERROR;
   }
 
   memset(ecu_signature, 0, sizeof(cp_ec256_signature_t));
-  if (recv(sockfd, ecu_signature, sizeof(cp_ec256_signature_t), 0) == -1) {
+  nbytes = recvfrom(sockfd, ecu_signature, sizeof(cp_ec256_signature_t), 0,
+                    (struct sockaddr *)&addr, &addr_len);
+  if (nbytes < sizeof(cp_ec256_signature_t)) {
     printf("error receiving ecu signature\n");
     return CP_ERROR;
   }
@@ -162,30 +200,21 @@ commpact_status_t setParametersRealECU(uint8_t position,
 
 commpact_status_t setupSocket() {
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sockfd == -1) {
-    printf("error opening stream socket");
+  if (sockfd < 0) {
+    printf("error opening udp socket");
     exit(1);
   }
 
-  sockaddr_in server;
-  server.sin_family = AF_INET;
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  inet_pton(AF_INET, SERVER_IP, &(addr.sin_addr));
+  addr.sin_port = htons(PORT);
+  addr_len = sizeof(addr);
 
-  inet_pton(AF_INET, SERVER_IP, &(server.sin_addr));
-  server.sin_port = htons(PORT);
+  // if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {
+  //  printf("error connecting udp socket");
+  //  exit(1);
+  //}
 
-  if (connect(sockfd, (struct sockaddr *)&server, sizeof(server)) == -1) {
-    printf("error connecting stream socket");
-    exit(1);
-  }
-
-  return CP_SUCCESS;
-}
-
-commpact_status_t getRealECUPubKey(uint8_t position,
-                                   cp_ec256_public_t *pub_key) {
-  if (recv(sockfd, pub_key, sizeof(cp_ec256_public_t), 0)) {
-    printf("error connecting stream socket");
-    exit(1);
-  }
   return CP_SUCCESS;
 }

@@ -65,10 +65,13 @@ sgx_status_t initialEc256KeyPair(sgx_ec256_public_t *pub) {
     return status;
   }
 
+  // get the ecu pubkey
+  ecu_pub_key = (sgx_ec256_public_t *)calloc(1, sizeof(sgx_ec256_public_t));
+  ocallECUSetGetEnclavePubKey(&retval, id, &(key_pair->pub), ecu_pub_key);
+
   // Copy pub key to the outside
   memcpy(pub, &(key_pair->pub), sizeof(sgx_ec256_public_t));
 
-  ocallECUSetEnclavePubKey(&retval, id, &(key_pair->pub));
   return SGX_SUCCESS;
 }
 
@@ -141,19 +144,6 @@ sgx_status_t checkAllowedSpeedEnclave(double speed, bool *verdict) {
   return SGX_SUCCESS;
 }
 
-sgx_status_t setECUPubKey(sgx_ec256_public_t *ecu_pub_key_in) {
-
-  if (ecu_pub_key != NULL) {
-    free(ecu_pub_key);
-    pub_keys = NULL;
-  }
-
-  // Allocate new memory
-  ecu_pub_key = (sgx_ec256_public_t *)calloc(1, sizeof(sgx_ec256_public_t));
-
-  memcpy(ecu_pub_key, ecu_pub_key_in, sizeof(sgx_ec256_public_t));
-  return SGX_SUCCESS;
-}
 sgx_status_t newContractChainGetSignatureEnclave(
     contract_chain_t *contract, sgx_ec256_signature_t *return_signature,
     sgx_ec256_signature_t *signatures, uint8_t num_signatures) {
@@ -227,6 +217,10 @@ sgx_status_t sendECUMessage(sgx_ec256_signature_t *signature,
     return status;
   }
 
+  // char msg[] = "Signing with pubkey for position";
+  // ocallPrints(&retval, msg);
+  // ocallPrintU(&retval, (unsigned int)position);
+  // ocallPrintX(&retval, *(unsigned int *)&key_pair->pub);
   status = sgx_ecdsa_sign((uint8_t *)message, sizeof(ecu_message_t),
                           &key_pair->priv, signature, handle);
   if (status != SGX_SUCCESS) {

@@ -3,9 +3,7 @@
 
 #define DEFAULT_ENCLAVE_FILENAME "/tmp/enclave.signed.so"
 #define COMMPACT_DEBUG
-#define USING_REAL_ECU 0
-#define PORT 9999
-#define SERVER_IP "192.168.0.2"
+#define USING_REAL_ECU 1
 
 #include "../include/commpact_types.h"
 

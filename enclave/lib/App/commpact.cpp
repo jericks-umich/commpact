@@ -51,6 +51,9 @@ commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
   sgx_status_t retval = SGX_SUCCESS;
   ret = setEnclaveId(*enclave_id, &retval, *enclave_id);
 
+  // setup socket to talk to ECU
+  setupSocket();
+
   return CP_SUCCESS;
 }
 
@@ -99,30 +102,12 @@ commpact_status_t initializeKeys(uint64_t enclave_id,
   sgx_status_t status = SGX_SUCCESS;
 
   // Generate a key pair in enclave, the key will also be passed to ecu
+  // ecu key will be returned to enclave
   status =
       initialEc256KeyPair(enclave_id, &retval, (sgx_ec256_public_t *)pubkey);
 
   if (status != SGX_SUCCESS) {
     printf("Failed initialize keys\n");
-    return CP_ERROR;
-  }
-
-  // Generate a key pair in ecu and pass the key to enclave
-  cp_ec256_public_t ecu_pub_key;
-  if (USING_REAL_ECU) {
-    getRealECUPubKey(INITIAL_SETUP.getPosition(enclave_id), &ecu_pub_key);
-  } else {
-    status = (sgx_status_t)generateKeyPair(
-        INITIAL_SETUP.getPosition(enclave_id), &ecu_pub_key);
-  }
-  if (status != SGX_SUCCESS) {
-    printf("Ecu failed generate keys\n");
-    return CP_ERROR;
-  }
-  status =
-      setECUPubKey(enclave_id, &retval, (sgx_ec256_public_t *)&ecu_pub_key);
-  if (status != SGX_SUCCESS) {
-    printf("Failed pass ecu's pub key into enclave\n");
     return CP_ERROR;
   }
 
@@ -343,15 +328,21 @@ int ocallECUMessage(uint64_t enclave_id,
   }
 }
 
-int ocallECUSetEnclavePubKey(uint64_t enclave_id,
-                             sgx_ec256_public_t *enclave_pub_key) {
+int ocallECUSetGetEnclavePubKey(uint64_t enclave_id,
+                                sgx_ec256_public_t *enclave_pub_key,
+                                sgx_ec256_public_t *ecu_pub_key) {
   if (USING_REAL_ECU) {
-    setEnclavePubKeyRealECU(INITIAL_SETUP.getPosition(enclave_id),
-                            (cp_ec256_public_t *)enclave_pub_key);
+    // printf("Sending pubkey to real ECU\n");
+    setGetEnclavePubKeyRealECU(INITIAL_SETUP.getPosition(enclave_id),
+                               (cp_ec256_public_t *)enclave_pub_key,
+                               (cp_ec256_public_t *)ecu_pub_key);
   } else {
-    setEnclavePubKey(INITIAL_SETUP.getPosition(enclave_id),
-                     (cp_ec256_public_t *)enclave_pub_key);
+    // printf("Sending pubkey to fake ECU\n");
+    setGetEnclavePubKey(INITIAL_SETUP.getPosition(enclave_id),
+                        (cp_ec256_public_t *)enclave_pub_key,
+                        (cp_ec256_public_t *)ecu_pub_key);
   }
+  // TODO: handle ecu communications errors in this function
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
 #include <pwd.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "sgx_eid.h"
@@ -18,6 +19,28 @@
 #define GET_POSITION InitialSetup::getInstance().getPosition
 
 // https://software.intel.com/en-us/articles/intel-software-guard-extensions-developing-a-sample-enclave-application
+
+#ifdef TIME_ECU
+FILE *latencyfd;
+
+uint32_t start_time() {
+  volatile uint32_t time;
+  asm __volatile__("  mfence       \n"
+                   "  lfence       \n"
+                   "  rdtsc        \n"
+                   "  lfence       \n"
+                   : "=a"(time));
+  return time;
+}
+uint32_t end_time() {
+  volatile uint32_t time;
+  asm __volatile__("  lfence       \n"
+                   "  rdtsc        \n"
+                   : "=a"(time));
+  return time;
+}
+
+#endif
 
 ///////////////////////////
 // API Exposed Functions //
@@ -53,6 +76,14 @@ commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
 
   // setup socket to talk to ECU
   setupSocket();
+
+#ifdef TIME_ECU
+  latencyfd = fopen(DEBUG_ECU_LATENCY_FILENAME, "w");
+  if (latencyfd == NULL) {
+    printf("error: can't open latency file\n");
+    exit(1);
+  }
+#endif
 
   return CP_SUCCESS;
 }
@@ -317,15 +348,42 @@ int ocallECUMessage(uint64_t enclave_id,
                     sgx_ec256_signature_t *enclave_signature,
                     ecu_message_t *message,
                     sgx_ec256_signature_t *ecu_signature) {
+#ifdef TIME_ECU
+  uint32_t start, end, diff;
+  double compute_time;
+#endif
   if (USING_REAL_ECU) {
+#ifdef TIME_ECU
+    start = start_time();
+#endif
     setParametersRealECU(INITIAL_SETUP.getPosition(enclave_id),
                          (cp_ec256_signature_t *)enclave_signature, message,
                          (cp_ec256_signature_t *)ecu_signature);
+#ifdef TIME_ECU
+    end = end_time();
+#endif
   } else {
+#ifdef TIME_ECU
+    start = start_time();
+#endif
     setParametersECU(INITIAL_SETUP.getPosition(enclave_id),
                      (cp_ec256_signature_t *)enclave_signature, message,
                      (cp_ec256_signature_t *)ecu_signature);
+#ifdef TIME_ECU
+    end = end_time();
+#endif
   }
+#ifdef TIME_ECU
+  if (end < start) {
+    diff = end + (1 << 31) - start + (1 << 31);
+    compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  } else {
+    diff = end - start;
+    compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  }
+  fprintf(latencyfd, "%f\n", compute_time);
+  fflush(latencyfd);
+#endif
 }
 
 int ocallECUSetGetEnclavePubKey(uint64_t enclave_id,

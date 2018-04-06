@@ -189,6 +189,7 @@ sgx_status_t sendECUMessage() {
   sgx_ec256_signature_t signature;
   ecu_message_t message;
 
+  memset(&message, 0, sizeof(ecu_message_t));
   message.position = position;
   message.num_vehicles = num_vehicles;
   message.recovery_phase_timeout = enclave_parameters.recovery_phase_timeout;

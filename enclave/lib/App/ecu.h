@@ -16,8 +16,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define PORT 9999
-#define SERVER_IP "192.168.1.147"
+//#define PORT 9999
+#define PORT 50000
+//#define SERVER_IP "192.168.1.147"
+#define SERVER_IP "192.168.0.21"
 
 typedef struct _ecu_t {
   ecu_message_t ecu_parameters;
@@ -25,6 +27,9 @@ typedef struct _ecu_t {
   cp_ec256_public_t ecu_pub_key;
   cp_ec256_private_t ecu_priv_key;
 } ecu_t;
+
+void copyECUMessage(void *dest, ecu_message_t *src);
+void copySignature(void *dest, cp_ec256_signature_t *src);
 
 commpact_status_t setGetEnclavePubKey(uint8_t position,
                                       cp_ec256_public_t *enclave_pub_key,

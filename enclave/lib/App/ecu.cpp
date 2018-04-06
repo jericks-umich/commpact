@@ -47,6 +47,11 @@ commpact_status_t setGetEnclavePubKeyRealECU(uint8_t position,
   buf[0] = ECU_SOCK_PUB_KEY_TYPE;
   buf[1] = position;
   memcpy(buf + 2, enclave_pub_key, sizeof(cp_ec256_public_t));
+  // printf("sending 2 bytes + pubkey: ");
+  // for (int i = 0; i < msg_len; i++) {
+  //  printf("%02x", buf[i]);
+  //}
+  // printf("\n");
   nbytes = sendto(sockfd, buf, msg_len, 0, (struct sockaddr *)&addr, addr_len);
   if (nbytes < (2 + sizeof(cp_ec256_public_t))) {
     printf("error sending ecu pubkey to real ecu\n");
@@ -59,6 +64,11 @@ commpact_status_t setGetEnclavePubKeyRealECU(uint8_t position,
     printf("error receiving pubkey from udp socket");
     return CP_ERROR;
   }
+  // printf("received pubkey: ");
+  // for (int i = 0; i < sizeof(cp_ec256_public_t); i++) {
+  //  printf("%02x", ((uint8_t *)ecu_pub_key)[i]);
+  //}
+  // printf("\n");
 
   return CP_SUCCESS;
 }
@@ -150,6 +160,45 @@ commpact_status_t signMessage(ecu_t *ecu, ecu_message_t *message,
   return CP_SUCCESS;
 }
 
+void copyECUMessage(void *dest, ecu_message_t *src) {
+#ifdef USING_BIG_ENDIAN
+  uint64_t temp;
+  temp = htond(src->recovery_phase_timeout);
+  memcpy(dest, &temp, sizeof(double));
+  temp = htond(src->upper_speed);
+  memcpy(dest + sizeof(double) * 1, &temp, sizeof(double));
+  temp = htond(src->lower_speed);
+  memcpy(dest + sizeof(double) * 2, &temp, sizeof(double));
+  temp = htond(src->upper_accel);
+  memcpy(dest + sizeof(double) * 3, &temp, sizeof(double));
+  temp = htond(src->lower_accel);
+  memcpy(dest + sizeof(double) * 4, &temp, sizeof(double));
+  temp = htond(src->max_decel);
+  memcpy(dest + sizeof(double) * 5, &temp, sizeof(double));
+  // grab last 2 uint8_t's
+  memcpy(dest + sizeof(double) * 6, src + sizeof(double) * 6,
+         sizeof(uint8_t) * 2);
+#else
+  memcpy(dest, src, sizeof(ecu_message_t));
+#endif
+}
+
+void copySignature(void *dest, cp_ec256_signature_t *src) {
+#ifdef USING_BIG_ENDIAN
+  uint32_t temp;
+  for (int i = 0; i < CP_NISTP_ECP256_KEY_SIZE; i++) {
+    temp = htonl(src->x[i]);
+    memcpy(dest + sizeof(uint32_t) * i, &temp, sizeof(uint32_t));
+  }
+  for (int i = 0; i < CP_NISTP_ECP256_KEY_SIZE; i++) {
+    temp = htonl(src->y[i]);
+    memcpy(dest + sizeof(uint32_t) * i, &temp, sizeof(uint32_t));
+  }
+#else
+  memcpy(dest, src, sizeof(cp_ec256_signature_t));
+#endif
+}
+
 commpact_status_t setParametersRealECU(uint8_t position,
                                        cp_ec256_signature_t *enclave_signature,
                                        ecu_message_t *message,
@@ -157,16 +206,6 @@ commpact_status_t setParametersRealECU(uint8_t position,
   uint64_t msg_len = 2 + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t);
   uint8_t buf[msg_len];
   int nbytes;
-  // printf("sending enclave message: ");
-  // for (int i = 0; i < sizeof(ecu_message_t); i++) {
-  //  printf("%02x", ((uint8_t *)message)[i]);
-  //}
-  // printf("\n");
-  // printf("sending enclave signature: ");
-  // for (int i = 0; i < sizeof(cp_ec256_signature_t); i++) {
-  //  printf("%02x", ((uint8_t *)enclave_signature)[i]);
-  //}
-  printf("\n");
   memset(buf, 0, msg_len);
   // clang-format off
           // MSG should look like: msg_type | vehicle position | message               |enclave_signature
@@ -174,27 +213,47 @@ commpact_status_t setParametersRealECU(uint8_t position,
   // clang-format on
   buf[0] = ECU_SOCK_MSG_TYPE;
   buf[1] = position;
-  memcpy(buf + 2, message, sizeof(ecu_message_t));
-  memcpy(buf + 2 + sizeof(ecu_message_t), enclave_signature,
-         sizeof(cp_ec256_signature_t));
-  // printf("sending message: ");
-  // for (int i = 0; i < msg_len; i++) {
-  //  printf("%02x", buf[i]);
-  //}
-  // printf("\n");
+  copyECUMessage(buf + 2, message);
+  // memcpy(buf + 2, message, sizeof(ecu_message_t));
+  copySignature(buf + 2 + sizeof(ecu_message_t), enclave_signature);
+  // memcpy(buf + 2 + sizeof(ecu_message_t), enclave_signature,
+  //       sizeof(cp_ec256_signature_t));
+  printf("sending enclave message: ");
+  for (int i = 0; i < sizeof(ecu_message_t); i++) {
+    printf("%02x", ((uint8_t *)buf + 2)[i]);
+  }
+  printf("\n");
+  printf("sending enclave signature: ");
+  for (int i = 0; i < sizeof(cp_ec256_signature_t); i++) {
+    printf("%02x", ((uint8_t *)buf + 2 + sizeof(ecu_message_t))[i]);
+  }
+  printf("\n");
+  printf("sending packet: ");
+  for (int i = 0; i < msg_len; i++) {
+    printf("%02x", buf[i]);
+  }
+  printf("\n");
   nbytes = sendto(sockfd, buf, msg_len, 0, (struct sockaddr *)&addr, addr_len);
   if (nbytes < (2 + sizeof(ecu_message_t) + sizeof(cp_ec256_signature_t))) {
     printf("error sending ecu message to real ecu\n");
     return CP_ERROR;
   }
 
+  cp_ec256_signature_t temp_sig;
+  memset(&temp_sig, 0, sizeof(cp_ec256_signature_t));
   memset(ecu_signature, 0, sizeof(cp_ec256_signature_t));
-  nbytes = recvfrom(sockfd, ecu_signature, sizeof(cp_ec256_signature_t), 0,
+  nbytes = recvfrom(sockfd, &temp_sig, sizeof(cp_ec256_signature_t), 0,
                     (struct sockaddr *)&addr, &addr_len);
   if (nbytes < sizeof(cp_ec256_signature_t)) {
     printf("error receiving ecu signature\n");
     return CP_ERROR;
   }
+  copySignature(ecu_signature, &temp_sig);
+  printf("received signature: ");
+  for (int i = 0; i < sizeof(cp_ec256_signature_t); i++) {
+    printf("%02x", ((uint8_t *)ecu_signature)[i]);
+  }
+  printf("\n");
   return CP_SUCCESS;
 }
 

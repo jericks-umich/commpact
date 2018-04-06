@@ -11,6 +11,7 @@ typedef struct _ecu_message_t {
   double max_decel;
   uint8_t num_vehicles;
   uint8_t position;
+  uint8_t pad[6]; // make sure to pad this struct to 8-byte alignment
 } ecu_message_t;
 
 #endif /* ECU_TYPES_H */

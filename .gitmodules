@@ -4,3 +4,6 @@
 [submodule "plexe-sumo"]
 	path = plexe-sumo
 	url = git@github.com:jericks-umich/plexe-sumo.git
+[submodule "commpact-data"]
+	path = commpact-data
+	url = git@github.com:jericks-umich/commpact-data

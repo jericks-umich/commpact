@@ -16,10 +16,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-//#define PORT 9999
-#define PORT 50000
-//#define SERVER_IP "192.168.1.147"
-#define SERVER_IP "192.168.0.21"
+#define PORT 9999
+//#define PORT 50000
+#define SERVER_IP "192.168.1.147"
+//#define SERVER_IP "192.168.0.21"
 
 typedef struct _ecu_t {
   ecu_message_t ecu_parameters;

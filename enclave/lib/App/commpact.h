@@ -4,8 +4,9 @@
 #define DEFAULT_ENCLAVE_FILENAME "/tmp/enclave.signed.so"
 #define COMMPACT_DEBUG
 #define USING_REAL_ECU 1
-//#define USING_BIG_ENDIAN // comment out when not using the automotive ECU
-#define TIME_ECU // comment this out when not timing the ECU specifically
+//#define USING_BIG_ENDIAN // comment out when not using the automotive ECU --
+// automotive ECU looks like is little-endian after all
+//#define TIME_ECU // comment this out when not timing the ECU specifically
 #define DEBUG_ECU_LATENCY_FILENAME "/tmp/ecu_latency.txt"
 #define CPU_TICKS_PER_SEC 4000000000 // 4Ghz
 

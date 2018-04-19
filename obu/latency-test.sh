@@ -46,7 +46,7 @@ for i in `seq 1 $n`; do
     size=$((128 + ($i - 1) * 64))
     echo "Packet Size: $size"
 
-    logFile="results/"$1"_"$2"_"$size".log"
+    logFile=$logDir"/"$1"_"$2"_"$size".log"
     echo "Log: $logFile"
 
     for j in `seq 1 $1`; do

@@ -33,8 +33,8 @@ echo "Data Rate: $dataRate"
 echo "Tx Power: $txPower"
 
 # check results directories
-logDir = "results_"$channelNumber"_"$dataRate"_"$txPower
-if [ ! -d logDir ]; then
+logDir="results_"$channelNumber"_"$dataRate"_"$txPower
+if [ ! -d $logDir ]; then
     mkdir $logDir
 fi
 echo "Log Dir: $logDir"

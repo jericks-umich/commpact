@@ -28,26 +28,11 @@
 #define WSM_HDR_DEFAULT_EXPIRY_TIME 0
 
 
-int timespec_subtract(struct timespec *result, struct timespec *x, struct timespec *y) {
-  /* Perform the carry for the later subtraction by updating y. */
-  if (x->tv_nsec < y->tv_nsec) {
-    int nsec = (y->tv_nsec - x->tv_nsec) / 1000000000 + 1;
-    y->tv_nsec -= 1000000000 * nsec;
-    y->tv_sec += nsec;
-  }
-  if (x->tv_nsec - y->tv_nsec > 1000000000) {
-    int nsec = (x->tv_nsec - y->tv_nsec) / 1000000000;
-    y->tv_nsec += 1000000000 * nsec;
-    y->tv_sec -= nsec;
-  }
+double timespec_subtract(struct timespec *x, struct timespec *y) {
+    double t1 = x->tv_sec + x->tv_nsec / 1000000000.0;
+    double t2 = y->tv_sec + y->tv_nsec / 1000000000.0;
 
-  /* Compute the time remaining to wait.
-     tv_nsec is certainly positive. */
-  result->tv_sec = x->tv_sec - y->tv_sec;
-  result->tv_nsec = x->tv_nsec - y->tv_nsec;
-
-  /* Return 1 if result is negative. */
-  return x->tv_sec < y->tv_sec;
+    return t1 - t2;
 }
 
 int init_socket(int channelNumber, int dataRate, int txPower) {
@@ -95,14 +80,17 @@ int main(int argc, char const *argv[]) {
     // data
     struct Dot3WSMPHdr *pHdr;
     uint8_t *pBuf = NULL;
+    uint8_t *pData = NULL;
     int bufLen = 0;
-    time_t ts1, ts2;
 
     // measurement
-    struct timespec t1, t2, t3, t4, result1, result2;
+    struct timespec t1, t2, t3, t4, ts;
+    double result;
 
     // parameters
-    // <len> <debug>
+    // seq number
+    int seq = 1;
+    // packet length
     int len = 64;
     // 172, 174, 175, 176, 178 (CCH), 180, 181, 182, 184
     int channelNumber = 178;
@@ -115,11 +103,12 @@ int main(int argc, char const *argv[]) {
     // [-64, 64] dBm
     int txPower = 32;
     int debug = 0;
-    if (argc > 1) len = atoi(argv[1]);
-    if (argc > 2) channelNumber = atoi(argv[2]);
-    if (argc > 3) dataRate = atoi(argv[3]);
-    if (argc > 4) txPower = atoi(argv[4]);
-    if (argc > 5) debug = 1;
+    if (argc > 1) seq = atoi(argv[1]);
+    if (argc > 2) len = atoi(argv[2]);
+    if (argc > 3) channelNumber = atoi(argv[3]);
+    if (argc > 4) dataRate = atoi(argv[4]);
+    if (argc > 5) txPower = atoi(argv[5]);
+    if (argc > 6) debug = 1;
 
     if (debug) {
         printf("Packet size: %d bytes\n", len);
@@ -134,6 +123,15 @@ int main(int argc, char const *argv[]) {
     fd = init_socket(channelNumber, dataRate, txPower);
     if (fd < 0) {
         res = -errno;
+        goto Error;
+    }
+
+    // timeout
+    struct timeval timeout; // 10 ms
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 20 * 1000;
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+        perror("setsockopt failed: ");
         goto Error;
     }
 
@@ -163,6 +161,16 @@ int main(int argc, char const *argv[]) {
     memset(pBuf + WSMP_HDR_SIZE, 0, len);
     bufLen += len;
     pBuf[bufLen - 1] = '\0';
+
+    // send
+    pData = pBuf + WSMP_HDR_SIZE;
+    // put seq #
+    memcpy(pData, &seq, sizeof(seq));
+    pData += sizeof(seq);
+    // put timestamp
+    clock_gettime(CLOCK_REALTIME, &t1);
+    memcpy(pData, &t1, sizeof(t1));
+
     if (debug) {
         printf("Send %d bytes: %s\n", bufLen, pBuf + WSMP_HDR_SIZE);
         for (int i = 0; i < bufLen; ++i) {
@@ -173,10 +181,6 @@ int main(int argc, char const *argv[]) {
         printf("\n");
     }
 
-    // send
-    ts1 = time(NULL);
-    memcpy(pBuf + WSMP_HDR_SIZE, &ts1, sizeof(ts1));
-    clock_gettime(CLOCK_REALTIME, &t1);
     res = sendto(fd, pBuf, bufLen, 0, NULL, 0);
     clock_gettime(CLOCK_REALTIME, &t2);
     if (res < 0) {
@@ -184,13 +188,6 @@ int main(int argc, char const *argv[]) {
         perror("sendto failed: ");
         goto Error;
     }
-
-    // timeout
-    struct timeval timeout;
-    timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
-        perror("setsockopt failed");
 
     // wait for response
     while (1) {
@@ -206,7 +203,9 @@ int main(int argc, char const *argv[]) {
 
             if (errno == EWOULDBLOCK || errno == EAGAIN) {
                 // timeout
-                perror("timeout: ");
+                // perror("timeout: ");
+                printf("-1\n");
+                // fprintf(stderr, "packet loss\n");
             } else {
                 perror("recvfrom failed: ");
             }
@@ -220,17 +219,19 @@ int main(int argc, char const *argv[]) {
             continue;
 
         // check timestamp
-        memcpy(&ts2, pBuf + WSMP_HDR_SIZE, sizeof(ts2));
+        memcpy(&ts, pData, sizeof(ts));
         if (debug) {
-            printf("ts1: %ld, ts2: %ld\n", ts1, ts2);
+            printf("t1: %lld.%.9ld, ts: %lld.%.9ld\n", (long long)t1.tv_sec, t1.tv_nsec,
+                                                       (long long)ts.tv_sec, ts.tv_nsec);
         }
         // timestamp, not match
-        if (ts1 != ts2)
+        if (t1.tv_sec != ts.tv_sec ||
+            t1.tv_nsec != ts.tv_nsec)
             continue;
 
         // print
-        pBuf[res] = '\0';
         if (debug) {
+            pBuf[res] = '\0';
             printf("Received %d bytes (, including %d bytes of header):\n", res, WSMP_HDR_SIZE);
             for (int i = 0; i < res; ++i) {
                 printf("%.2X ", pBuf[i] & 0xFF);
@@ -249,10 +250,9 @@ int main(int argc, char const *argv[]) {
         printf("Before recving: %lld.%.9ld\n", (long long)t3.tv_sec, t3.tv_nsec);
         printf("After recving: %lld.%.9ld\n", (long long)t4.tv_sec, t4.tv_nsec);
     }
-    timespec_subtract(&result1, &t4, &t1);
-    timespec_subtract(&result2, &t4, &t2);
-    printf("%lld.%.9ld %lld.%.9ld\n", (long long)result1.tv_sec, result1.tv_nsec,
-                                      (long long)result2.tv_sec, result2.tv_nsec);
+    result = timespec_subtract(&t4, &t1);
+    // printf("%lld.%.9ld\n", (long long)result.tv_sec, result.tv_nsec);
+    printf("%lf\n", result);
 
 Error:
     if (debug) {

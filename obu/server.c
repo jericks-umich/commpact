@@ -26,6 +26,14 @@
 /// WSM header expiry time=0, never expire
 #define WSM_HDR_DEFAULT_EXPIRY_TIME 0
 
+
+double timespec_subtract(struct timespec *x, struct timespec *y) {
+    double t1 = x->tv_sec + x->tv_nsec / 1000000000.0;
+    double t2 = y->tv_sec + y->tv_nsec / 1000000000.0;
+
+    return t1 - t2;
+}
+
 int init_socket(int channelNumber, int dataRate, int txPower) {
     int fd;
     int res;
@@ -66,12 +74,16 @@ int main(int argc, char const *argv[]) {
     int res = -ENOSYS;
     struct Dot3WSMPSockAddr sockAddr;
     socklen_t addrLen = sizeof(sockAddr);
-    struct timespec t1;
+    struct timespec t1, ts;
+    double result;
+    int seq = 1, prevSeq = 0;
 
     uint8_t *pBuf = NULL;
+    uint8_t *pData = NULL;
     int bufLen = P1609_RX_BUF_SIZE;
     struct Dot3WSMPHdr *pHdr;
 
+    // parameters
     // 172, 174, 175, 176, 178 (CCH), 180, 181, 182, 184
     int channelNumber = 178;
     // "dot3-wsmp.h"
@@ -109,6 +121,7 @@ int main(int argc, char const *argv[]) {
     while (1) {
         // receive
         res = recvfrom(fd, pBuf, bufLen, 0, (struct sockaddr *)&sockAddr, &addrLen);
+        clock_gettime(CLOCK_REALTIME, &ts);
         if (res < 0) {
             perror("recvfrom failed: ");
             res = -errno;
@@ -119,9 +132,16 @@ int main(int argc, char const *argv[]) {
         if (res == 0)
             continue;
 
+        pData = pBuf + WSMP_HDR_SIZE;
+        // get seq #
+        memcpy(&seq, pData, sizeof(seq));
+        pData += sizeof(seq);
+        // get embedded timestamp
+        memcpy(&t1, pData, sizeof(t1));
+
         // print
-        pBuf[res] = '\0';
         if (debug >= 2) {
+            pBuf[res] = '\0';
             printf("Received %d bytes (, including %d bytes of header):\n", res, WSMP_HDR_SIZE);
             for (int i = 0; i < res; ++i) {
                 printf("%.2X ", pBuf[i] & 0xFF);
@@ -139,19 +159,36 @@ int main(int argc, char const *argv[]) {
         pHdr->Version       = DOT3_WSMP_VERSION_3;
 
         // send
-        printf("echo\n");
         res = sendto(fd, pBuf, res, 0, NULL, 0);
         if (res < 0) {
             perror("sendto failed: ");
             goto Error;
         }
 
-        if (debug >= 1) {
-            clock_gettime(CLOCK_REALTIME, &t1);
-            printf("ts: %lld.%.9ld\n", (long long)t1.tv_sec, t1.tv_nsec);
+        if (seq == 1) {
+            prevSeq = 0;
         }
+        if (debug) {
+            printf("prev: %d, seq #: %d\n", prevSeq, seq);
+        }
+        if (seq != prevSeq + 1) {
+            // packet loss
+            for (int i = 0; i < seq - prevSeq - 1; ++i)
+                printf("-1\n");
+        }
+        // received
+        if (debug) {
+            printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
+            printf("%lld.%.9ld\n", (long long)t1.tv_sec, t1.tv_nsec);
+        }
+        result = timespec_subtract(&ts, &t1);
+        // printf("%lld.%.9ld\n", (long long)result.tv_sec, result.tv_nsec);
+        printf("%lf\n", result);
 
-        printf("==========\n");
+        // update seq # status
+        prevSeq = seq;
+
+        // printf("==========\n");
     }
 
     if (res < 0)

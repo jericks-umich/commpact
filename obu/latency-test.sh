@@ -50,7 +50,7 @@ for i in `seq 1 $n`; do
     echo "Log: $logFile"
 
     for j in `seq 1 $1`; do
-        ./client $size $channelNumber $dataRate $txPower | tee -a $logFile
+        ./client $j $size $channelNumber $dataRate $txPower | tee $logFile
     done
 
     echo "Done!"

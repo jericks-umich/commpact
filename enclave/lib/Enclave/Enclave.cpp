@@ -334,6 +334,30 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract,
   // Yes, unless (we are the leader && this is a deceleration/reverse chain)
   *should_update_ecu = true;
 
+  // timeout is being extended
+  if (contract->recovery_phase_timeout >
+      enclave_parameters.recovery_phase_timeout) {
+    for (int i = 0; i < contract->chain_length; ++i) {
+      if ((i == 0 || i == contract->chain_length - 1) &&
+          contract->chain_order[i] != 0) {
+        int retval = 0;
+        char msg[] = "checkParametersHelper: timeout is being extended but "
+                     "leader isn't first and last in chain order";
+        ocallPrints(&retval, msg);
+        return SGX_ERROR_UNEXPECTED;
+      } else {
+        if (contract->chain_order[i] != i) {
+          int retval = 0;
+          char msg[] = "checkParametersHelper: timeout is being extended but "
+                       "vehicle positions aren't ascending in chain order";
+          ocallPrints(&retval, msg);
+          return SGX_ERROR_UNEXPECTED;
+        }
+      }
+      return SGX_SUCCESS;
+    }
+  }
+
   // if contract bounds are staying the same
   if (contract->upper_speed == enclave_parameters.upper_speed &&
       contract->lower_speed == enclave_parameters.lower_speed) {

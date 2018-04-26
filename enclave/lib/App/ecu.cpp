@@ -1,9 +1,12 @@
 #include "ecu.h"
+#include "commpact.h"
 #include "initialsetup.h"
 
 #include "sgx_tcrypto.h"
 
 #include <stdlib.h>
+
+//#define TIME_SIGN_VERIFY
 
 ///////////////////////
 // GLOBAL PARAMETERS //
@@ -19,6 +22,28 @@ unsigned int addr_len;
 // map index is platoon position
 // std::unordered_map<uint64_t, ecu_t> ecus;
 ecu_t ecus[COMMPACT_MAX_ENCLAVES];
+
+#ifdef TIME_SIGN_VERIFY
+FILE *latencyfd;
+
+uint32_t start_time() {
+  volatile uint32_t time;
+  asm __volatile__("  mfence       \n"
+                   "  lfence       \n"
+                   "  rdtsc        \n"
+                   "  lfence       \n"
+                   : "=a"(time));
+  return time;
+}
+uint32_t end_time() {
+  volatile uint32_t time;
+  asm __volatile__("  lfence       \n"
+                   "  rdtsc        \n"
+                   : "=a"(time));
+  return time;
+}
+
+#endif
 
 commpact_status_t setGetEnclavePubKey(uint8_t position,
                                       cp_ec256_public_t *enclave_pub_key,
@@ -81,6 +106,11 @@ commpact_status_t setParametersECU(uint8_t position,
   uint8_t verify_result = 0;
   void *handle;
   ecu_t *ecu = &ecus[position];
+#ifdef TIME_SIGN_VERIFY
+  uint32_t start, end, diff;
+  double compute_time;
+  start = start_time();
+#endif
   sgx_ecdsa_verify((uint8_t *)message, sizeof(ecu_message_t),
                    (sgx_ec256_public_t *)&(ecu->enclave_pub_key),
                    (sgx_ec256_signature_t *)enclave_signature, &verify_result,
@@ -90,10 +120,40 @@ commpact_status_t setParametersECU(uint8_t position,
     memset(ecu_signature, 0, sizeof(cp_ec256_signature_t));
     return CP_SUCCESS;
   }
+#ifdef TIME_SIGN_VERIFY
+  end = end_time();
+  if (end < start) {
+    diff = end + (1 << 31) - start + (1 << 31);
+    compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  } else {
+    diff = end - start;
+    compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  }
+  fprintf(latencyfd, "verify cycles: %u | ", diff);
+  fprintf(latencyfd, "verify: %f | ", compute_time);
+  fflush(latencyfd);
+#endif
+
   memcpy(&(ecu->ecu_parameters), message, sizeof(ecu_message_t));
 
-  // Sign the message
+// Sign the message
+#ifdef TIME_SIGN_VERIFY
+  start = start_time();
+#endif
   signMessage(ecu, message, ecu_signature);
+#ifdef TIME_SIGN_VERIFY
+  end = end_time();
+  if (end < start) {
+    diff = end + (1 << 31) - start + (1 << 31);
+    compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  } else {
+    diff = end - start;
+    compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  }
+  fprintf(latencyfd, "sign cycles: %u | ", diff);
+  fprintf(latencyfd, "sign: %8f\n", compute_time);
+  fflush(latencyfd);
+#endif
 
   return CP_SUCCESS;
 }
@@ -105,6 +165,14 @@ commpact_status_t generateKeyPair(uint8_t position,
   sgx_status_t status = SGX_SUCCESS;
   void *ecc_handle;
   ecu_t *ecu = &ecus[position];
+
+#ifdef TIME_SIGN_VERIFY
+  latencyfd = fopen(DEBUG_ECU_LATENCY_FILENAME, "w");
+  if (latencyfd == NULL) {
+    printf("error: can't open latency file\n");
+    exit(1);
+  }
+#endif
 
   status = sgx_ecc256_open_context(&ecc_handle);
   if (status != SGX_SUCCESS) {

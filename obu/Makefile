@@ -38,3 +38,4 @@ server: server.c
 clean:
 	rm -f *.d *.o
 	rm -f client server
+

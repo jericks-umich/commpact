@@ -1,4 +1,3 @@
-
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -6,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "commpact_types.h"
@@ -203,6 +203,9 @@ void handle_message(uint8_t position, uint8_t *buf, int *nbytes) {
   //  printf("%02x", ((uint8_t *)msg_ptr)[i]);
   //}
   // printf("\n");
+  // clock_t start, end;
+  // double compute_time;
+  // start = clock();
   status = verifyMessage(position, sig, msg_ptr);
   if (status != CP_SUCCESS) { // verify failed
     printf("verify failed\n");
@@ -210,9 +213,14 @@ void handle_message(uint8_t position, uint8_t *buf, int *nbytes) {
     memset(buf, 0, *nbytes);
     return;
   }
+  // end = clock();
+  // compute_time = ((double)end - start) / CLOCKS_PER_SEC;
+  // printf("verify: %f | ", compute_time);
+
   // printf("verify succeeded\n");
   // copy message into memory
   state[position] = *msg_ptr;
+  // start = clock();
   // sign response
   status = signMessage(position, msg_ptr, (cp_ec256_signature_t *)buf);
   if (status != CP_SUCCESS) { // sign failed
@@ -220,6 +228,9 @@ void handle_message(uint8_t position, uint8_t *buf, int *nbytes) {
     memset(buf, 0, *nbytes);
     return;
   }
+  // end = clock();
+  // compute_time = ((double)end - start) / CLOCKS_PER_SEC;
+  // printf("sign: %8f\n", compute_time);
   // return signature
   *nbytes = sizeof(cp_ec256_signature_t);
   // memcpy(buf, &sig, *nbytes); // signature written directly into buf

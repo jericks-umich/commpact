@@ -302,8 +302,11 @@ sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
   for (int i = 0; i < contract->chain_length; ++i) {
     // i is the position in the chain_order
     uint8_t pos = contract->chain_order[i];
-    if (pos == position) { // if we've reached our own vehicle
-      break;               // then we're done verifying signatures
+    if (pos == position) { // if we've reached our own vehicle then we're done
+                           // verifying signatures
+      if (!(position == 0 && i == 0)) {
+        break;
+      }
     }
     if (num_signatures < pos) { // sanity check
       ocallPrintI(&retval, (int)num_signatures);

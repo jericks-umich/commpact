@@ -303,7 +303,13 @@ sgx_status_t validateSignaturesHelper(contract_chain_t *contract,
     // i is the position in the chain_order
     uint8_t pos = contract->chain_order[i];
     if (pos == position) { // if we've reached our own vehicle
-      break;               // then we're done verifying signatures
+                           // then we're done verifying signatures
+      // if we're the leader and just received a contract chain with > 0
+      // signatures, then we shouldn't break
+      if (!(i == 0 && position == 0 && num_signatures > 0)) {
+        break;
+      }
+      // TODO: fix this for other types of contract chains
     }
     if (num_signatures < pos) { // sanity check
       ocallPrintI(&retval, (int)num_signatures);

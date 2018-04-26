@@ -33,7 +33,7 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 commpact_status_t newContractChainGetSignatureCommpact(
     uint64_t enclave_id, contract_chain_t contract,
     cp_ec256_signature_t *return_signature, uint8_t num_signatures,
-    cp_ec256_signature_t *signatures);
+    cp_ec256_signature_t *signatures, double *compute_time);
 ////////////////////////////////////////////////////////////////////////////////
 
 // debug functions

@@ -22,6 +22,7 @@
 
 #ifdef TIME_ECU
 FILE *latencyfd;
+#endif
 
 uint32_t start_time() {
   volatile uint32_t time;
@@ -39,8 +40,6 @@ uint32_t end_time() {
                    : "=a"(time));
   return time;
 }
-
-#endif
 
 ///////////////////////////
 // API Exposed Functions //
@@ -248,10 +247,12 @@ commpact_status_t checkAllowedSpeed(uint64_t enclave_id, double speed,
 commpact_status_t newContractChainGetSignatureCommpact(
     uint64_t enclave_id, contract_chain_t contract,
     cp_ec256_signature_t *return_signature, uint8_t num_signatures,
-    cp_ec256_signature_t *signatures) {
+    cp_ec256_signature_t *signatures, double *compute_time) {
   sgx_status_t retval = SGX_SUCCESS;
   sgx_status_t status = SGX_SUCCESS;
 
+  uint32_t start, end, diff;
+  start = start_time();
   status = newContractChainGetSignatureEnclave(
       enclave_id, &retval, &contract, (sgx_ec256_signature_t *)return_signature,
       (sgx_ec256_signature_t *)signatures, num_signatures);
@@ -262,6 +263,14 @@ commpact_status_t newContractChainGetSignatureCommpact(
   if (retval != SGX_SUCCESS) {
     printf("ERROR: newContractChainGetSignature retval = 0x%x\n", retval);
     return CP_ERROR;
+  }
+  end = end_time();
+  if (end < start) {
+    diff = end + (1 << 31) - start + (1 << 31);
+    *compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
+  } else {
+    diff = end - start;
+    *compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
   }
   return CP_SUCCESS;
 }

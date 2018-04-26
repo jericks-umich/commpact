@@ -399,6 +399,10 @@ sgx_status_t checkParametersHelper(contract_chain_t *contract,
       // if we get here, this is a deceleration chain
       if (position == 0) {          // and we're the leader
         *should_update_ecu = false; // so we shouldn't update the ECU
+        // TODO: needs another check to see if every other vehicle has already
+        // started decelerating, and if so, send it to the ECU
+        // As is, it just means that the *next* contract chain will cause the
+        // leader to begin decelerating, which should be okay
       }
       return SGX_SUCCESS;
     }

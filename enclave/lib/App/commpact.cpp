@@ -23,7 +23,9 @@
 #ifdef TIME_ECU
 FILE *latencyfd;
 #endif
-
+#ifdef TIME_ENCLAVE
+FILE *latencyfd2;
+#endif
 uint32_t start_time() {
   volatile uint32_t time;
   asm __volatile__("  mfence       \n"
@@ -79,6 +81,13 @@ commpact_status_t initEnclaveWithFilename(uint64_t *e_id,
 #ifdef TIME_ECU
   latencyfd = fopen(DEBUG_ECU_LATENCY_FILENAME, "w");
   if (latencyfd == NULL) {
+    printf("error: can't open latency file\n");
+    exit(1);
+  }
+#endif
+#ifdef TIME_ENCLAVE
+  latencyfd2 = fopen(DEBUG_ENCLAVE_LATENCY_FILENAME, "w");
+  if (latencyfd2 == NULL) {
     printf("error: can't open latency file\n");
     exit(1);
   }
@@ -272,6 +281,10 @@ commpact_status_t newContractChainGetSignatureCommpact(
     diff = end - start;
     *compute_time = ((double)diff) / CPU_TICKS_PER_SEC;
   }
+#ifdef TIME_ENCLAVE
+  fprintf(latencyfd2, "%lu: %f\n", enclave_id - 2, *compute_time);
+  fflush(latencyfd2);
+#endif
   return CP_SUCCESS;
 }
 

@@ -7,7 +7,9 @@
 //#define USING_BIG_ENDIAN // comment out when not using the automotive ECU --
 // automotive ECU looks like is little-endian after all
 //#define TIME_ECU // comment this out when not timing the ECU specifically
+#define TIME_ENCLAVE
 #define DEBUG_ECU_LATENCY_FILENAME "/tmp/ecu_latency.txt"
+#define DEBUG_ENCLAVE_LATENCY_FILENAME "/tmp/enclave_latency.txt"
 #define CPU_TICKS_PER_SEC 4000000000 // 4Ghz
 
 #include "../include/commpact_types.h"
